@@ -1,0 +1,14 @@
+[build]
+  # The directory where the built application files are located
+  publish = "build"
+
+  # The command that Netlify will run to build your site
+  command = "npm run build"
+
+[[redirects]]
+  # This is crucial for single-page applications (SPAs) like React.
+  # It redirects all non-file requests back to the index.html.
+  # This prevents 404 errors when a user refreshes the page on a sub-route.
+  from = "/*"
+  to = "/index.html"
+  status = 200

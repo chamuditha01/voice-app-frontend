@@ -31,8 +31,8 @@ function SpeakerDashboard() {
           const { data: reviewsData, error: reviewsError } = await supabase
             .from('reviews')
             .select('*')
-            .eq('reviewed_id', user.id);
-          
+            .eq('reviewed_email', user.email);
+
           if (reviewsError) throw reviewsError;
           setReviews(reviewsData);
 
@@ -41,11 +41,11 @@ function SpeakerDashboard() {
             setAverageRating((totalRating / reviewsData.length).toFixed(1));
           }
         } else {
-          navigate('/login');
+          navigate('/');
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-        navigate('/login');
+        navigate('/');
       } finally {
         setLoading(false);
       }
@@ -84,14 +84,8 @@ function SpeakerDashboard() {
       <h1 style={styles.heading}>Welcome, Speaker!</h1>
       <p style={styles.greeting}>You are logged in as: <span style={styles.highlight}>{user.email}</span></p>
       <div style={styles.card}>
-        <h2 style={styles.cardHeading}>Your Speaker Dashboard</h2>
-        <p style={styles.cardText}>
-          This is where you'll track your earnings, view your ratings, and manage your availability.
-        </p>
-        <button onClick={toggleAvailability} style={isAvailable ? styles.availableButton : styles.unavailableButton}>
-          {isAvailable ? "You are Available" : "Go Online"}
-        </button>
-        <CallComponent/>
+        
+       <CallComponent email={user.email} role="speaker" />
       </div>
       
       {/* New section for displaying ratings and feedback */}

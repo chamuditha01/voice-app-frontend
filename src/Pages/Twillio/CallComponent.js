@@ -13,8 +13,9 @@ const CallComponent = ({ email, role }) => {
 
     const [myId, setMyId] = useState(null);
     const [rawUsers, setRawUsers] = useState([]);
-    const [callTime, setCallTime] = useState(0); // New state for the timer
-    const timerRef = useRef(null); // Ref to hold the timer interval
+    const [callTime, setCallTime] = useState(0);
+    const [startTime, setStartTime] = useState(null); // New state for start time
+    const timerRef = useRef(null);
 
     useEffect(() => {
         wsRef.current = new WebSocket('ws://localhost:8080');
@@ -90,7 +91,6 @@ const CallComponent = ({ email, role }) => {
         };
     }, [email, role]);
 
-    // UseEffect for user list filtering
     useEffect(() => {
         if (myId !== null && rawUsers.length > 0) {
             let filtered = [];
@@ -103,9 +103,9 @@ const CallComponent = ({ email, role }) => {
         }
     }, [myId, rawUsers, role]);
 
-    // UseEffect to start and stop the timer
     useEffect(() => {
         if (status === 'In a call') {
+            setStartTime(new Date().toISOString());
             timerRef.current = setInterval(() => {
                 setCallTime(prevTime => prevTime + 1);
             }, 1000);
@@ -113,6 +113,7 @@ const CallComponent = ({ email, role }) => {
             clearInterval(timerRef.current);
             setCallTime(0);
         }
+        return () => clearInterval(timerRef.current);
     }, [status]);
 
     const formatTime = (seconds) => {
@@ -183,6 +184,38 @@ const CallComponent = ({ email, role }) => {
     };
 
     const endCall = (notifyServer = true) => {
+        const endTime = new Date().toISOString();
+        
+        // Find the email of the other user
+        const otherUser = rawUsers.find(user => 
+            user.id === currentCallTarget || user.id === callRequest
+        );
+        
+        // Determine the roles and assign emails accordingly
+        let learner_email, speaker_email;
+        if (role === 'learner') {
+            learner_email = email;
+            speaker_email = otherUser ? otherUser.email : null;
+        } else {
+            learner_email = otherUser ? otherUser.email : null;
+            speaker_email = email;
+        }
+
+        // Only submit data if a call was actually established
+        if (status === 'In a call' && startTime && otherUser) {
+            const callData = {
+                learner_email,
+                speaker_email,
+                duration: callTime,
+                startTime,
+                endTime,
+            };
+
+            if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                wsRef.current.send(JSON.stringify({ type: 'submit_call_data', ...callData }));
+            }
+        }
+        
         if (peerConnectionRef.current) {
             peerConnectionRef.current.close();
             peerConnectionRef.current = null;
@@ -207,7 +240,6 @@ const CallComponent = ({ email, role }) => {
             <p>Role: <strong>{role}</strong></p>
             <p>Status: <strong>{status}</strong></p>
             
-            {/* Display the call timer if the status is 'In a call' */}
             {status === 'In a call' && (
                 <p>Call Time: <strong>{formatTime(callTime)}</strong></p>
             )}

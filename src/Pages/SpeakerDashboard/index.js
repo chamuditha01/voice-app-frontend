@@ -28,7 +28,7 @@ function SpeakerDashboard() {
           setIsAvailable(userData.is_available);
 
           // Fetch reviews and calculate average rating
-          const { data: reviewsData, error: reviewsError } = await supabase
+          {/*const { data: reviewsData, error: reviewsError } = await supabase
             .from('reviews')
             .select('*')
             .eq('reviewed_email', user.email);
@@ -39,7 +39,7 @@ function SpeakerDashboard() {
           if (reviewsData.length > 0) {
             const totalRating = reviewsData.reduce((sum, review) => sum + review.rating, 0);
             setAverageRating((totalRating / reviewsData.length).toFixed(1));
-          }
+          }*/}
         } else {
           navigate('/');
         }

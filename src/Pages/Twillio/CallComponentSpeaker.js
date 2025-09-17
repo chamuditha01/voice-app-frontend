@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import "./index.css";
 import { useSwipeable } from "react-swipeable";
 import Header from "../../Components/Header";
-import imgsound from "./sound.png";
 import imgunmute from "./mic.png";
 import imgmute from "./microphone.png";
+import imgsound from "./sound.png";
 
 const CallComponent = ({ email, role }) => {
   const [status, setStatus] = useState("Disconnected");
@@ -14,6 +14,7 @@ const CallComponent = ({ email, role }) => {
   const peerConnectionRef = useRef(null);
   const wsRef = useRef(null);
   const myIdRef = useRef(null);
+
   const [myId, setMyId] = useState(null);
   const [rawUsers, setRawUsers] = useState([]);
   const [callTime, setCallTime] = useState(0);
@@ -21,40 +22,16 @@ const CallComponent = ({ email, role }) => {
   const [dbCallId, setDbCallId] = useState(null);
   const [showRatingForm, setShowRatingForm] = useState(false);
   const timerRef = useRef(null);
+
   const [callDetails, setCallDetails] = useState({
     opponentEmail: null,
     targetId: null,
     callId: null,
   });
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
+
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState("");
-  const [name, setName] = useState("");
-  const [age, setAge] = useState(0);
-  const [bio, setBio] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-
-  useEffect(() => {
-    // Fetch data from local storage
-    const storedName = localStorage.getItem('userName');
-    const storedAge = localStorage.getItem('userAge');
-    const storedBio = localStorage.getItem('userBio');
-    const imgUrl = localStorage.getItem('userImageUrl')
-
-    // Update state only if data exists in local storage
-    if (storedName) {
-      setName(storedName);
-    }
-    if (storedAge) {
-      setAge(parseInt(storedAge, 10)); // Convert age to a number
-    }
-    if (storedBio) {
-      setBio(storedBio);
-    }
-    if(imgUrl){
-        setImageUrl(imgUrl);
-    }
-  }, []);
 
   const resetStates = () => {
     setCallRequest(null);
@@ -377,11 +354,43 @@ const CallComponent = ({ email, role }) => {
     resetStates();
   };
 
+  const stylebutton2 = {
+    width: "100%",
+    padding: "15px 20px",
+    backgroundColor: "#facce4ff",
+    color: "#e94e9f",
+    fontSize: "18px",
+    fontWeight: "bold",
+    border: "none",
+    borderRadius: "50px",
+    cursor: "pointer",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    transition: "background-color 0.2s ease-in-out",
+    marginTop: "20%",
+  };
+
+  const stylebutton3 = {
+    width: "100%",
+    padding: "15px 20px",
+    backgroundColor: "#facce4ff",
+    color: "#e94e9f",
+    fontSize: "18px",
+    fontWeight: "bold",
+    border: "none",
+    borderRadius: "50px",
+    cursor: "pointer",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    transition: "background-color 0.2s ease-in-out",
+    marginTop: "10%",
+    marginBottom:'10px'
+  };
+
   const styles = {
     outerContainer: {
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
+
       minHeight: "70vh",
       minWidth: "360px",
       boxSizing: "border-box",
@@ -405,6 +414,7 @@ const CallComponent = ({ email, role }) => {
       width: "80%",
       height: "auto",
       borderRadius: "20px",
+
       margin: "20px auto",
       justifyContent: "center",
       alignItems: "center",
@@ -443,21 +453,6 @@ const CallComponent = ({ email, role }) => {
       fontSize: "16px",
       fontWeight: "bold",
     },
-  };
-
-  const stylebutton2 = {
-    width: "100%",
-    padding: "15px 20px",
-    backgroundColor: "#facce4ff",
-    color: "#e94e9f",
-    fontSize: "18px",
-    fontWeight: "bold",
-    border: "none",
-    borderRadius: "50px",
-    cursor: "pointer",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    transition: "background-color 0.2s ease-in-out",
-    marginTop: "20%",
   };
 
   const buttonStyle = {
@@ -500,13 +495,6 @@ const CallComponent = ({ email, role }) => {
     }
   };
 
-  const resetStates1 = () => {
-    // Sets dbCallId to null and other call-related states to their initial values
-    setCallRequest(null);
-    setDbCallId(null);
-    setCallDetails({ opponentEmail: null, targetId: null, callId: null });
-  };
-
   return (
     <div style={styles.outerContainer}>
       <Header />
@@ -515,7 +503,8 @@ const CallComponent = ({ email, role }) => {
       status !== "In a call" &&
       status !== "Connecting..." &&
       status !== "Requesting Call..." &&
-      status !== "No speakers are currently available. Please try again later." &&
+      status !==
+        "No speakers are currently available. Please try again later." &&
       !showRatingForm &&
       availableUsers.length > 0 ? (
         <div {...handlers} style={{ width: "100%", touchAction: "pan-y" }}>
@@ -556,36 +545,10 @@ const CallComponent = ({ email, role }) => {
         <>
           {showRatingForm ? (
             <form onSubmit={handleRatingSubmit} className="rating-form">
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "left",
-                  width: "100%",
-                  maxWidth: "360px",
-                }}
-              >
-                <div>
-                  <h1 style={{ margin: "0px", color: "#000000ff" }}>
-                    Rate {callDetails.opponentEmail.split("0")[0]}
-                  </h1>
-                </div>
-                <div>
-                  <img
-                    src="https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
-                    width={"50px"}
-                    height={"50px"}
-                    style={{
-                      borderRadius: "10px",
-                      objectFit: "cover",
-                    }}
-                    alt="Profile"
-                  />
-                </div>
-              </div>
+              <h3>Rate Your Call</h3>
               <p>
-                How would you rate your experience with {callDetails.opponentEmail}?
+                How would you rate your experience with{" "}
+                {callDetails.opponentEmail}?
               </p>
               <div className="rating-stars">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -612,10 +575,7 @@ const CallComponent = ({ email, role }) => {
               </button>
               <button
                 style={{ ...buttonStyle, marginTop: "10px" }}
-                onClick={() => {
-                  resetStates1();
-                  window.location.reload();
-                }}
+                onClick={() => window.location.reload()}
               >
                 Skip
               </button>
@@ -623,6 +583,83 @@ const CallComponent = ({ email, role }) => {
           ) : (
             <>
               {status === "In a call" && (
+                <>
+                  <div style={styles.outerContainer}>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        maxWidth: "360px",
+                      }}
+                    >
+                      <div>
+                        <h1 style={{ margin: "0px", color: "#000000ff" }}>
+                          You're talking to{" "}
+                          {callDetails.opponentEmail.split("0")[0]}
+                        </h1>
+                      </div>
+                      <div style={{ textAlign: "center" }}>
+                        <img
+                          src="https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
+                          width={"50px"}
+                          height={"50px"}
+                          style={{
+                            borderRadius: "10px",
+                            objectFit: "cover",
+                            margin: "0 auto",
+                          }}
+                          alt="Profile"
+                        />
+                      </div>
+                    </div>
+                    <div style={{ marginTop: "25%", textAlign: "center" }}>
+                      <img
+                        src={imgsound}
+                        width={"50px"}
+                        height={"50px"}
+                        style={{ borderRadius: "10px", objectFit: "cover" }}
+                        alt="freq"
+                      />
+                      <h1>
+                        {" "}
+                        <strong>{formatTime(callTime)}</strong>
+                      </h1>
+                      <div onClick={toggleMute}>
+                        <img
+                          src={isMuted ? imgmute : imgunmute}
+                          width={"30px"}
+                          height={"30px"}
+                          style={{
+                            borderRadius: "50px",
+                            objectFit: "cover",
+                            marginBottom: "8%",
+                            backgroundColor: "#facce4ff",
+                            padding: "15px",
+                          }}
+                          alt="mic"
+                        />
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => endCall(true, true)}
+                      disabled={status === "Disconnected"}
+                      style={stylebutton2}
+                    >
+                      End Call
+                    </button>
+                  </div>
+                </>
+              )}
+              {status === "Requesting Call..." && (
+                <p>Calling {callDetails.opponentEmail}...</p>
+              )}
+              {status ===
+                "No speakers are currently available. Please try again later." && (
+                <p>
+                  No speakers are currently available. Please try again later.
+                </p>
+              )}
+              {callRequest && (
                 <div style={styles.outerContainer}>
                   <div
                     style={{
@@ -633,7 +670,7 @@ const CallComponent = ({ email, role }) => {
                   >
                     <div>
                       <h1 style={{ margin: "0px", color: "#000000ff" }}>
-                        You're talking to {callDetails.opponentEmail.split("@")[0]}
+                        {callDetails.opponentEmail.split("0")[0]} is calling...
                       </h1>
                     </div>
                     <div style={{ textAlign: "center" }}>
@@ -650,67 +687,37 @@ const CallComponent = ({ email, role }) => {
                       />
                     </div>
                   </div>
-                  <div style={{ marginTop: "25%", textAlign: "center" }}>
-                    <img
-                      src={imgsound}
-                      width={"50px"}
-                      height={"50px"}
-                      style={{ borderRadius: "10px", objectFit: "cover" }}
-                      alt="freq"
-                    />
-                    <h1>
-                      <strong>{formatTime(callTime)}</strong>
-                    </h1>
-                    <div onClick={toggleMute}>
-                      <img
-                        src={isMuted ? imgmute : imgunmute}
-                        width={"30px"}
-                        height={"30px"}
-                        style={{
-                          borderRadius: "50px",
-                          objectFit: "cover",
-                          marginBottom: "8%",
-                          backgroundColor: "#facce4ff",
-                          padding: "15px",
-                        }}
-                        alt="mic"
-                      />
-                    </div>
+                  <div style={{ marginTop: "5%", textAlign: "left", backgroundColor: "#facce4ff", padding: "20px", borderRadius: "30px",margin:'10px' }}>
+                    <h4 style={{marginTop:'0px',fontSize:'20px',marginBottom:'5px'}}>About</h4>
+                    {callDetails.description || "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam."}
+                <h4 style={{marginTop:'10px',fontSize:'20px',marginBottom:'5px'}}>Interests</h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
+  {(callDetails.interests || "Reading, Traveling, Music, Sports")
+    .split(',')
+    .map((interest, index) => (
+      <span key={index} style={{
+        backgroundColor: '#f0f2f5',
+        color: '#e94e9f',
+        padding: '5px 12px',
+        borderRadius: '20px',
+        fontSize: '14px',
+        fontWeight: 'bold',
+        whiteSpace: 'nowrap'
+      }}>
+        {interest.trim()}
+      </span>
+    ))}
+</div>
                   </div>
-
-                  <button
-                    onClick={() => endCall(true, true)}
-                    disabled={status === "Disconnected"}
-                    style={stylebutton2}
-                  >
-                    End Call
-                  </button>
-                </div>
-              )}
-              {status === "Requesting Call..." && (
-                <p>Calling {callDetails.opponentEmail}...</p>
-              )}
-              {status ===
-                "No speakers are currently available. Please try again later." && (
-                <p>
-                  No speakers are currently available. Please try again later.
-                </p>
-              )}
-              {callRequest && (
-                <div>
-                  <p>
-                    Incoming call from {callDetails.opponentEmail}. Do you want
-                    to accept?
-                  </p>
-                  <button onClick={handleAcceptCall} className="accept-button">
+                  <button onClick={handleAcceptCall} style={stylebutton3}>
                     Accept
                   </button>
-                  <button onClick={handleRejectCall} className="reject-button">
+                  
+                  <button onClick={handleRejectCall} style={buttonStyle}>
                     Reject
                   </button>
                 </div>
               )}
-              {availableUsers.length === 0 && <p>No users available now</p>}
             </>
           )}
         </>

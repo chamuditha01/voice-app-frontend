@@ -28,6 +28,11 @@
   color: #61dafb;
 }
 
+body{
+  margin:0;
+  font-family: 'Funnel Display', sans-serif !important;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

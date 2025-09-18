@@ -172,7 +172,7 @@ useEffect(() => {
   };
 
   useEffect(() => {
-    wsRef.current = new WebSocket("wss://voice-app-production.up.railway.app");
+    wsRef.current = new WebSocket("ws://localhost:8080");
 
     wsRef.current.onopen = () => {
       console.log("Connected to signaling server");
@@ -470,8 +470,8 @@ useEffect(() => {
   const stylebutton3 = {
     width: "100%",
     padding: "15px 20px",
-    backgroundColor: "#facce4ff",
-    color: "#e94e9f",
+    backgroundColor: "#f9e7f3",
+    color: "#e14e97",
     fontSize: "18px",
     fontWeight: "bold",
     border: "none",
@@ -550,13 +550,13 @@ useEffect(() => {
       marginBottom: "auto",
     },
     endCallButton: {
-      backgroundColor: "#dc3545",
+      backgroundColor: "#e14e97",
       color: "white",
       padding: "10px 20px",
       border: "none",
       borderRadius: "5px",
       cursor: "pointer",
-      fontSize: "16px",
+      fontSize: "18px",
       fontWeight: "bold",
       textTransform: "capitalize",
       fontFamily: "'Funnel Display', sans-serif",  
@@ -566,8 +566,8 @@ useEffect(() => {
   const stylebutton2 = {
     width: "100%",
     padding: "15px 20px",
-    backgroundColor: "#facce4ff",
-    color: "#e94e9f",
+    backgroundColor: "#f9e7f3",
+    color: "#e14e97",
     fontSize: "18px",
     fontWeight: "bold",
     border: "none",
@@ -583,9 +583,9 @@ useEffect(() => {
   const buttonStyle = {
     width: "100%",
     padding: "15px 20px",
-    backgroundColor: "#e94e9f",
+    backgroundColor: "#e14e97",
     color: "white",
-    fontSize: "15px",
+    fontSize: "18px",
     fontWeight: "bold",
     border: "none",
     borderRadius: "50px",
@@ -637,7 +637,7 @@ useEffect(() => {
       availableUsers.length > 0 ? (
         <div {...handlers} style={{ width: "100%", touchAction: "pan-y" }}>
           <div>
-            <h1 style={{ margin: "0px", color: "#e94e9f", textAlign: "left" }}>
+            <h1 style={{ margin: "0px", color: "#e14e97", textAlign: "left" }}>
               {currentUser.bio || "A cool guy with a beard, talks beers"}
             </h1>
 
@@ -696,7 +696,7 @@ useEffect(() => {
                 }}
               >
                 <div>
-                  <h1 style={{ margin: "0px", color: "#000000ff" }}>
+                  <h1 style={{ margin: "0px", color: "#000000" }}>
   Rate {callDetails.opponentName?.split(' ')[0] || callDetails.opponentEmail.split("@")[0]}
 </h1>
                 </div>
@@ -739,7 +739,7 @@ useEffect(() => {
     maxHeight: "300px",
     resize: "vertical",
     backgroundColor: "#facce4ff",
-    color: "#000000ff",
+    color: "#000000",
     border: "0px solid #f9a8d4",
     borderRadius: "20px",
     padding: "20px",
@@ -782,7 +782,7 @@ useEffect(() => {
                     }}
                   >
                     <div>
-                      <h1 style={{ margin: "0px", color: "#000000ff", lineHeight:'normal' }}>
+                      <h1 style={{ margin: "0px", color: "#000000", lineHeight:'normal' }}>
                         You're talking to {callDetails.opponentName || callDetails.opponentEmail.split("@")[0]}
                       </h1>
                     </div>
@@ -811,7 +811,7 @@ useEffect(() => {
                       style={{ borderRadius: "10px", objectFit: "cover" }}
                       alt="freq"
                     />
-                    <h1 style={{ margin: "0px", color: "#000000ff" }}>
+                    <h1 style={{ margin: "0px", color: "#000000" }}>
                       {formatTime(callTime)}
                     </h1>
                     <div onClick={toggleMute} style={{ cursor: "pointer" }}>
@@ -860,7 +860,7 @@ useEffect(() => {
                     }}
                   >
                     <div>
-                      <h1 style={{ margin: "0px", color: "#000000ff" }}>
+                      <h1 style={{ margin: "0px", color: "#000000" }}>
                         {callDetails.opponentName || callDetails.opponentEmail.split("@")[0]} is calling...
                       </h1>
                     </div>
@@ -891,7 +891,7 @@ useEffect(() => {
     .map((interest, index) => (
       <span key={index} style={{
         backgroundColor: '#f0f2f5',
-        color: '#e94e9f',
+        color: '#e14e97',
         padding: '5px 12px',
         borderRadius: '20px',
         fontSize: '14px',

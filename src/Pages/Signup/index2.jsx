@@ -63,7 +63,7 @@ const Register = () => {
       <Header />
 
       {/* Grid Section */}
-      <h1 style={{ margin: '0px', color: '#e94e9f', textAlign: 'left' }}>Sign Up to start talking right now...</h1>
+      <h1 style={{ margin: '0px', color: '#e14e97', textAlign: 'left' }}>Sign Up to start talking right now...</h1>
 
       {/* Inputs connected to state */}
       <div style={{ width: '100%', maxWidth: '320px', marginBottom: '20px', marginTop: '25%' }}>

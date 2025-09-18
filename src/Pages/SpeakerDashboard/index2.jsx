@@ -37,7 +37,7 @@ const styles = {
     },
     dataValue: {
         fontWeight: 'bold',
-        color: '#e94e9f',
+        color: '#e14e97',
     },
     divider: {
         borderBottom: '1px solid #eee',
@@ -55,7 +55,7 @@ const styles = {
     callRequestText: {
         fontSize: '20px',
         fontWeight: 'bold',
-        color: '#e94e9f',
+        color: '#e14e97',
         marginBottom: '15px',
     },
     callButtons: {

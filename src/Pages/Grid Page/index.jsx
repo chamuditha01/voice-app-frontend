@@ -99,7 +99,7 @@ const HomeScreen = () => {
                     <div style={styles.gridRow}>
                         {gridUsers.map((user, index) => (
                             <div key={user.id} style={styles.gridItem}>
-                                <img src={user.imageUrl || 'https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D'} alt={`Profile ${index}`} style={styles.profileImage} />
+                                <img draggable="false" src={user.imageUrl || 'https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D'} alt={`Profile ${index}`} style={styles.profileImage} />
                             </div>
                         ))}
                         {/* Render empty white squares if there are fewer than 4 users */}
@@ -168,20 +168,20 @@ const styles = {
     gridSection: {
         display: 'flex',
         justifyContent: 'center',
-        width: '100%',
+        width: '90%',
         flexShrink: 1,
         marginBottom: '30px',
     },
     gridContainer: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px',
+        gap: '10px',
         backgroundColor: '#e0e0e0',
-        borderRadius: '15px',
+        borderRadius: '35px',
         padding: '15px',
         boxShadow: '0 5px 15px rgba(0, 0, 0, 0.05)',
         maxWidth: '300px',
-        width: '100%',
+        width: '80%',
     },
     gridRow: {
         display: 'flex',
@@ -189,10 +189,10 @@ const styles = {
         gap: '8px',
     },
     gridItem: {
-        width: 'calc(25% - 6px)',
+        width: 'calc(23% - 6px)',
         aspectRatio: '1 / 1',
         backgroundColor: '#ffffff',
-        borderRadius: '12px',
+        borderRadius: '20px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -206,7 +206,7 @@ const styles = {
     },
     textContainer: {
         textAlign: 'center',
-        marginBottom: '30px',
+        margin: "10% auto",
         maxWidth: '300px',
         flexShrink: 1,
     },

@@ -5,7 +5,7 @@ import Signup from './Pages/Signup';
 import Login from './Pages/Login/Login';
 import Dashboard from './Pages/Dashboard';
 import PrivateRoute from './Components/PrivateRoute';
-import LearnerDashboard from './Pages/LeanerDashboard';
+
 import SpeakerDashboard from './Pages/SpeakerDashboard';
 import { useEffect,useState } from 'react';
 import TalktuLandingPage from './Pages/Lading Page';
@@ -18,6 +18,9 @@ import RoleSelector from './Pages/Role Selector';
 import Register from './Pages/Signup/index2';
 import SpeakerDashboard2 from './Pages/SpeakerDashboard/index2';
 import UpdateProfile from './Pages/UpdateProfile';
+import MenuPage from './Pages/Menu Page';
+import SpeakerDashboard3 from './Pages/SpeakerDashboard/index3';
+import LearnerDashUpdate from './Pages/LeanerDashboard';
 
 
 
@@ -60,9 +63,9 @@ function App() {
         } />
           
           {/* Protected routes */}
-          <Route path="/learner-dashboard" element={
+          <Route path="/learner-" element={
             <PrivateRoute requiredRole="learner">
-              <LearnerDashboard />
+              
             </PrivateRoute>
           } />
           <Route path="/login" element={<LoginPage />} />
@@ -79,6 +82,9 @@ function App() {
           <Route path="/signup2" element={<Register />} />
           <Route path="/sp-dashboard" element={<SpeakerDashboard2 />} />
           <Route path="/update-profile" element={<UpdateProfile />} />
+          <Route path="/menu" element={<MenuPage />} />
+          <Route path='/speakerdashboard' element={<SpeakerDashboard3/>} />
+          <Route path='/learnerdashboard' element={<LearnerDashUpdate/>} />
         </Routes>
       </BrowserRouter>
     </div>

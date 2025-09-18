@@ -5,6 +5,7 @@ import Header from "../../Components/Header";
 import imgsound from "./sound.png";
 import imgunmute from "./mic.png";
 import imgmute from "./microphone.png";
+import Button3 from "../../Components/Button 3";
 
 const CallComponent = ({ email, role }) => {
   const [status, setStatus] = useState("Disconnected");
@@ -140,7 +141,7 @@ const CallComponent = ({ email, role }) => {
   };
 
   useEffect(() => {
-    wsRef.current = new WebSocket("wss://voice-app-production.up.railway.app");
+    wsRef.current = new WebSocket("ws://localhost:8080");
 
     wsRef.current.onopen = () => {
       console.log("Connected to signaling server");
@@ -483,13 +484,13 @@ const CallComponent = ({ email, role }) => {
       marginBottom: "auto",
     },
     endCallButton: {
-      backgroundColor: "#dc3545",
+      backgroundColor: "#e14e97",
       color: "white",
       padding: "10px 20px",
       border: "none",
       borderRadius: "5px",
       cursor: "pointer",
-      fontSize: "16px",
+      fontSize: "18px",
       fontWeight: "bold",
       textTransform: "capitalize",
       fontFamily: "'Funnel Display', sans-serif",  
@@ -499,8 +500,8 @@ const CallComponent = ({ email, role }) => {
   const stylebutton2 = {
     width: "100%",
     padding: "15px 20px",
-    backgroundColor: "#facce4ff",
-    color: "#e94e9f",
+    backgroundColor: "#f9e7f3",
+    color: "#e14e97",
     fontSize: "18px",
     fontWeight: "bold",
     border: "none",
@@ -516,9 +517,9 @@ const CallComponent = ({ email, role }) => {
   const buttonStyle = {
     width: "100%",
     padding: "15px 20px",
-    backgroundColor: "#e94e9f",
+    backgroundColor: "#e14e97",
     color: "white",
-    fontSize: "15px",
+    fontSize: "18px",
     fontWeight: "bold",
     border: "none",
     borderRadius: "50px",
@@ -547,6 +548,7 @@ const CallComponent = ({ email, role }) => {
   const [isMuted, setIsMuted] = useState(false);
 
   const toggleMute = () => {
+    setIsMuted(!isMuted);
     if (localStreamRef.current) {
       localStreamRef.current.getAudioTracks().forEach((track) => {
         track.enabled = !track.enabled;
@@ -582,7 +584,7 @@ const CallComponent = ({ email, role }) => {
       availableUsers.length > 0 ? (
         <div {...handlers} style={{ width: "100%", touchAction: "pan-y" }}>
           <div>
-            <h1 style={{ margin: "0px", color: "#e94e9f", textAlign: "left" }}>
+            <h1 style={{ margin: "0px", color: "#e14e97", textAlign: "left" }}>
               {currentUser.bio || "A cool guy with a beard, talks beers"}
             </h1>
             <div style={styles.imageContainer}>
@@ -600,7 +602,7 @@ const CallComponent = ({ email, role }) => {
             </div>
             <div style={{width:'80%',margin:'0 auto'}}>
             <h1 style={styles.nameAndAge}>
-              {currentUser.name || currentUser.email.split("@")[0]},{' '}
+              {currentUser.name.split(" ")[0] || currentUser.email.split("@")[0]},{' '}
               {currentUser.age || "N/A"}
             </h1>
             <h1 style={styles.location}>
@@ -622,7 +624,7 @@ const CallComponent = ({ email, role }) => {
                   )
                 }
               >
-                Talk {currentUser.name || currentUser.email.split("@")[0]}
+                Talk {currentUser.name.split(" ")[0] || currentUser.email.split("@")[0]}
               </button>
             )}
           </div>
@@ -643,7 +645,7 @@ const CallComponent = ({ email, role }) => {
                 }}
               >
                 <div>
-                  <h1 style={{ margin: "0px", color: "#000000ff" }}>
+                  <h1 style={{ margin: "0px", color: "#000000" }}>
   Rate {callDetails.opponentName?.split(' ')[0] || callDetails.opponentEmail.split("@")[0]}
 </h1>
                 </div>
@@ -686,7 +688,7 @@ const CallComponent = ({ email, role }) => {
     maxHeight: "300px",
     resize: "vertical",
     backgroundColor: "#facce4ff",
-    color: "#000000ff",
+    color: "#000000",
     border: "0px solid #f9a8d4",
     borderRadius: "20px",
     padding: "20px",
@@ -728,7 +730,7 @@ const CallComponent = ({ email, role }) => {
                     }}
                   >
                     <div>
-                      <h1 style={{ margin: "0px", color: "#000000ff", lineHeight:'normal' }}>
+                      <h1 style={{ margin: "0px", color: "#000000", lineHeight:'normal' }}>
                         You're talking to {callDetails.opponentName || callDetails.opponentEmail.split("@")[0]}
                       </h1>
                     </div>
@@ -757,7 +759,7 @@ const CallComponent = ({ email, role }) => {
                       style={{ borderRadius: "10px", objectFit: "cover" }}
                       alt="freq"
                     />
-                    <h1 style={{ margin: "0px", color: "#000000ff" }}>
+                    <h1 style={{ margin: "0px", color: "#000000" }}>
                       {formatTime(callTime)}
                     </h1>
                     <div onClick={toggleMute} style={{ cursor: "pointer" }}>
@@ -787,7 +789,55 @@ const CallComponent = ({ email, role }) => {
                 </div>
               )}
               {status === "Requesting Call..." && (
-                <p>Calling {callDetails.opponentEmail}...</p>
+                
+                <div style={styles.outerContainer}>
+                    <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      maxWidth: "360px",
+                    }}
+                  >
+                    <div>
+                      <h1 style={{ margin: "0px", color: "#000000", lineHeight:'normal' }}>
+                        Calling {currentUser.name.split(" ")[0] || currentUser.email.split("@")[0]}...
+                      </h1>
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      <img
+                        src={
+                          callDetails.opponentImageUrl ||
+                          "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
+                        }
+                        width={"50px"}
+                        height={"50px"}
+                        style={{
+                          borderRadius: "10px",
+                          objectFit: "cover",
+                          margin: "0 auto",
+                        }}
+                        alt="Profile"
+                      />
+                    </div>
+
+                  </div>
+                  <div onClick={toggleMute} style={{ cursor: "pointer", marginTop:'90%',marginBottom:'10%' }}>
+                      <img
+                        src={isMuted ? imgmute : imgunmute}
+                        width={"30px"}
+                        height={"30px"}
+                        style={{
+                          borderRadius: "50px",
+                          objectFit: "cover",
+                          
+                          backgroundColor: "#facce4ff",
+                          padding: "15px",
+                        }}
+                        alt="mic"
+                      />
+                    </div>
+                    <Button3 text={"Cancel"} onClick={endCall} />
+                </div>
               )}
               {status ===
                 "No speakers are currently available. Please try again later." && (

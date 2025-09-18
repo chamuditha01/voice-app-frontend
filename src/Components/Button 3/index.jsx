@@ -4,8 +4,8 @@ import styled from 'styled-components';
 const StyledButton = styled.button`
   width: 100%;
   padding: 15px 20px;
-  background-color: #facce4ff; /* The pink color */
-  color: #e94e9f;
+  background-color: #f9e7f3; /* The pink color */
+  color: #e14e97;
   font-size: 18px;
   font-weight: bold;
   border: none;
@@ -14,13 +14,14 @@ const StyledButton = styled.button`
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Adds a subtle shadow */
   transition: background-color 0.2s ease-in-out;
   text-transform: capitalize;
+  font-family: 'Funnel Display', sans-serif;
   
   &:hover {
-    background-color: #facce4ff;
+    background-color: #f9e7f3;
   }
 
   &:active {
-    background-color: #facce4ff;
+    background-color: #f9e7f3;
   }
 `;
 

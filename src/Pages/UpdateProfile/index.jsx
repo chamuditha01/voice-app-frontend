@@ -122,7 +122,7 @@ const UpdateProfile = () => {
             <form onSubmit={handleUpdateProfile} style={{ width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div style={styles.avatarContainer}>
                     {avatarUrl ? (
-                        <img src={avatarUrl} alt="Avatar" style={styles.avatarImage} />
+                        <img src={avatarUrl} alt="Avatar" style={styles.avatarImage} draggable="false"/>
                     ) : (
                         <div style={styles.noAvatarPlaceholder}>No Image</div>
                     )}
@@ -210,7 +210,7 @@ const styles = {
         boxSizing: 'border-box',
         maxWidth: '360px',
         minWidth: '360px',
-        padding: '20px',
+        
     },
     input: {
         width: '100%',

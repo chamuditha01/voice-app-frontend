@@ -87,7 +87,7 @@ const LoginScreen = ({ role }) => {
             <Header />
 
             {/* Grid Section */}
-            <h1 style={{ margin: '0px', color: '#e94e9f', textAlign: 'left' }}>Sign In to start talking right now...</h1>
+            <h1 style={{ margin: '0px', color: '#e14e97', textAlign: 'left' }}>Sign In to start talking right now...</h1>
 
             {/* Inputs connected to state */}
             <div style={{ width: '100%', maxWidth: '320px', marginBottom: '20px', marginTop: '25%' }}>
@@ -144,7 +144,7 @@ const styles = {
     padding: '10px 0',
     background: 'transparent',
     fontSize: '18px',
-    color: '#000000ff',
+    color: '#000000',
     outline: 'none',
     fontWeight: "600",
     fontFamily: "'Funnel Display', sans-serif",  // 👈 Added

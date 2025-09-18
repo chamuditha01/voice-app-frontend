@@ -40,7 +40,7 @@ const LoginScreen = ({ role }) => {
                     // Fetch additional user profile data from the `users` table
                     const { data: profileData, error: profileError } = await supabase
                         .from('users')
-                        .select('name, age, bio, imageUrl')
+                        .select('name, age, bio, imageUrl, location')
                         .eq('email', user.email)
                         .single();
 
@@ -57,6 +57,7 @@ const LoginScreen = ({ role }) => {
                         localStorage.setItem('userAge', profileData.age || '');
                         localStorage.setItem('userBio', profileData.bio || '');
                         localStorage.setItem('userImageUrl', profileData.imageUrl || '');
+                        localStorage.setItem('userLocation', profileData.location || '');
 
                         console.log('User data saved to local storage.');
                     }
@@ -100,7 +101,7 @@ const LoginScreen = ({ role }) => {
                 />
             </div>
 
-            <div style={{ width: '100%', maxWidth: '320px', marginBottom: '25%' }}>
+            <div style={{ width: '100%', maxWidth: '320px', marginBottom: '15%' }}>
                 <input
                     placeholder="Password"
                     type="password"
@@ -137,15 +138,18 @@ const styles = {
         minWidth: '360px',
     },
     input: {
-        width: '100%',
-        border: 'none',
-        borderBottom: '1px solid #ccc',
-        padding: '10px 0',
-        background: 'transparent',
-        fontSize: '18px',
-        color: '#333',
-        outline: 'none',
-    },
+    width: '100%',
+    border: 'none',
+    borderBottom: '1px solid #ccc',
+    padding: '10px 0',
+    background: 'transparent',
+    fontSize: '18px',
+    color: '#000000ff',
+    outline: 'none',
+    fontWeight: "600",
+    fontFamily: "'Funnel Display', sans-serif",  // 👈 Added
+},
+
     signInLink: {
         display: 'block',
         marginTop: '10px',

@@ -14,6 +14,7 @@ const UpdateProfile = () => {
     const [bio, setBio] = useState('');
     const [age, setAge] = useState('');
     const [avatarUrl, setAvatarUrl] = useState(null);
+    const [userLocation, setUserLocation] = useState('');
     const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
@@ -31,7 +32,7 @@ const UpdateProfile = () => {
             // Fetch user profile data from your `users` table
             const { data: profileData, error: profileError } = await supabase
                 .from('users')
-                .select('name, bio, age, imageUrl') // Select the new 'name' column
+                .select('name, bio, age, imageUrl, location') // Select the new 'name' column
                 .eq('email', userEmail)
                 .single();
 
@@ -42,6 +43,7 @@ const UpdateProfile = () => {
                 setBio(profileData.bio || '');
                 setAge(profileData.age || '');
                 setAvatarUrl(profileData.imageUrl || null);
+                setUserLocation(profileData.location || '');
             }
 
             setLoading(false);
@@ -90,7 +92,7 @@ const UpdateProfile = () => {
 
         const { error: profileError } = await supabase
             .from('users')
-            .update({ name, bio, age, imageUrl: avatarUrl }) // Include 'name' in the update
+            .update({ name, bio, age, imageUrl: avatarUrl, location: userLocation }) // Include 'name' in the update
             .eq('email', email);
 
         if (profileError) {
@@ -137,7 +139,7 @@ const UpdateProfile = () => {
                     />
                 </div>
 
-                <div style={{ width: '100%', marginBottom: '20px', marginTop: '25%' }}>
+                <div style={{ width: '100%', marginBottom: '20px', marginTop: '5%' }}>
                     <input
                         placeholder="Email"
                         type="email"
@@ -170,8 +172,8 @@ const UpdateProfile = () => {
                         style={styles.input}
                     />
                 </div>
-
-                <div style={{ width: '100%', marginBottom: '25%' }}>
+                <div style={{display:'flex',flexDirection:'row',width:'100%',gap:'10px',height:'70px'}}>
+                <div style={{ width: '100%', marginBottom: '20px' }}>
                     <input
                         placeholder="Age"
                         type="number"
@@ -181,7 +183,17 @@ const UpdateProfile = () => {
                         style={styles.input}
                     />
                 </div>
-
+<div style={{ width: '100%', marginBottom: '25%' }}>
+                    <input
+                        placeholder="Location"
+                        type="text"
+                        id="location"
+                        value={userLocation}
+                        onChange={(e) => setUserLocation(e.target.value)}
+                        style={styles.input}
+                    />
+                </div>
+                </div>
                 <Button2 text="Update Profile" onClick={handleUpdateProfile} />
             </form>
         </div>
@@ -192,7 +204,7 @@ const styles = {
     container: {
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
+        alignItems: 'left',
         minHeight: '100vh',
         backgroundColor: '#f0f2f5',
         boxSizing: 'border-box',

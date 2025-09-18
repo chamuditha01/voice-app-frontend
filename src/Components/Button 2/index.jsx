@@ -13,6 +13,7 @@ const StyledButton = styled.button`
   cursor: pointer;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Adds a subtle shadow */
   transition: background-color 0.2s ease-in-out;
+  text-transform: capitalize;
   
   &:hover {
     background-color: #e94e9f;

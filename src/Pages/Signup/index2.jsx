@@ -77,7 +77,7 @@ const Register = () => {
         />
       </div>
 
-      <div style={{ width: '100%', maxWidth: '320px', marginBottom: '25%' }}>
+      <div style={{ width: '100%', maxWidth: '320px', marginBottom: '15%' }}>
         <input
           placeholder="Password"
           type="password"
@@ -126,7 +126,7 @@ const styles = {
   signInLink: {
     display: 'block',
     marginTop: '10px',
-    textAlign: 'center',
+    textAlign: 'left',
     color: '#000',
     textDecoration: 'none',
     fontWeight: 'bold',

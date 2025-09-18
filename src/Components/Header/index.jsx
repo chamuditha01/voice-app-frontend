@@ -1,12 +1,13 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 
 const HeaderContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding-bottom: 10px;
- 
+  height: 100px;
   color: #333; // Adjust for the text color
   width: 100%;
   max-width: 450px; // To mimic the mobile view on a desktop
@@ -43,10 +44,27 @@ const MenuLine1 = styled.div`
   margin-left: auto; /* This line aligns it to the right */
 `;
 
+
+  
 const Header = () => {
+
+  const navigate = useNavigate();
+
+  const handleLogoClick = () => {
+    const userEmail = localStorage.getItem('userEmail');
+    if (userEmail) {
+      navigate('/update-profile', { state: { userEmail: userEmail } });
+    } else {
+      // If no email is found, redirect to login or home
+      navigate('/login'); 
+    }
+  };
+
   return (
     <HeaderContainer>
-      <Logo>talktu</Logo>
+      <h1 onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
+      talktu
+    </h1>
       <MenuIcon>
         <MenuLine />
         <MenuLine1 />

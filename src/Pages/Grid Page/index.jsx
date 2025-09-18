@@ -141,7 +141,7 @@ const styles = {
         minWidth: '360px',
         boxSizing: 'border-box',
         maxWidth: '360px',
-        padding: '20px',
+        
     },
     header: {
         width: '100%',

@@ -5,6 +5,7 @@ import Header from "../../Components/Header";
 import imgunmute from "./mic.png";
 import imgmute from "./microphone.png";
 import imgsound from "./sound.png";
+import ringtone from './ringtone.mp3';
 
 const CallComponent = ({ email, role }) => {
   const [status, setStatus] = useState("Disconnected");
@@ -14,7 +15,7 @@ const CallComponent = ({ email, role }) => {
   const peerConnectionRef = useRef(null);
   const wsRef = useRef(null);
   const myIdRef = useRef(null);
-
+  const [ringtoneAudio, setRingtoneAudio] = useState(null);
   const [myId, setMyId] = useState(null);
   const [rawUsers, setRawUsers] = useState([]);
   const [callTime, setCallTime] = useState(0);
@@ -25,28 +26,85 @@ const CallComponent = ({ email, role }) => {
 
   const [callDetails, setCallDetails] = useState({
     opponentEmail: null,
+    opponentName: null,
+    opponentAge: null,
+    opponentBio: null,
+    opponentImageUrl: null,
     targetId: null,
     callId: null,
   });
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
-
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState("");
+  const [name, setName] = useState(""); // Current user's name
+  const [age, setAge] = useState(0);   // Current user's age
+  const [bio, setBio] = useState("");  // Current user's bio
+  const [imageUrl, setImageUrl] = useState(""); // Current user's imageUrl
+  const [location, setLocation] = useState(""); // Current user's location
+
+  useEffect(() => {
+    // Initialize the audio object on component mount
+    const audio = new Audio(ringtone);
+    audio.loop = true; // Make the ringtone loop
+    setRingtoneAudio(audio);
+}, []);
+
+useEffect(() => {
+    // Control playback based on the callRequest state
+    if (ringtoneAudio) {
+        if (callRequest) {
+            ringtoneAudio.play().catch(e => console.error("Error playing ringtone:", e));
+        } else {
+            ringtoneAudio.pause();
+            ringtoneAudio.currentTime = 0; // Rewind the audio
+        }
+    }
+}, [callRequest, ringtoneAudio]);
+
+  useEffect(() => {
+    // Fetch data from local storage
+    const storedName = localStorage.getItem('userName');
+    const storedAge = localStorage.getItem('userAge');
+    const storedBio = localStorage.getItem('userBio');
+    const storedImageUrl = localStorage.getItem('userImageUrl');
+    const storedLocation = localStorage.getItem('userLocation');
+
+    // Update state only if data exists in local storage
+    if (storedName) setName(storedName);
+    if (storedAge) setAge(parseInt(storedAge, 10)); // Convert age to a number
+    if (storedBio) setBio(storedBio);
+    if (storedImageUrl) setImageUrl(storedImageUrl);
+    if (storedLocation) setLocation(storedLocation);
+  }, []);
 
   const resetStates = () => {
     setCallRequest(null);
     setDbCallId(null);
-    setCallDetails({ opponentEmail: null, targetId: null, callId: null });
+    setCallDetails({
+      opponentEmail: null,
+      opponentName: null,
+      opponentAge: null,
+      opponentBio: null,
+      opponentImageUrl: null,
+      opponentLocation: null,
+      targetId: null,
+      callId: null,
+    });
   };
 
   const startCall = async (
     targetId,
     callId,
     opponentEmail,
+    opponentName,
+    opponentAge,
+    opponentBio,
+    opponentImageUrl,
+    opponentLocation,
     isCaller = false
   ) => {
     setStatus("Connecting...");
-    setCallDetails({ opponentEmail, targetId, callId });
+    setCallDetails({ opponentEmail, opponentName, opponentAge, opponentBio, opponentImageUrl, opponentLocation, targetId, callId });
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -97,6 +155,12 @@ const CallComponent = ({ email, role }) => {
               type: "sdp",
               sdp: peerConnectionRef.current.localDescription,
               targetId,
+              opponentEmail,
+              opponentName,
+              opponentAge,
+              opponentBio,
+              opponentImageUrl,
+              opponentLocation,
             })
           );
         }
@@ -108,7 +172,7 @@ const CallComponent = ({ email, role }) => {
   };
 
   useEffect(() => {
-    wsRef.current = new WebSocket("ws://localhost:8080");
+    wsRef.current = new WebSocket("wss://voice-app-production.up.railway.app");
 
     wsRef.current.onopen = () => {
       console.log("Connected to signaling server");
@@ -119,6 +183,11 @@ const CallComponent = ({ email, role }) => {
             type: "user_info",
             email,
             role,
+            name: name || email.split("@")[0], // Fallback to email username if name is missing
+            age: age || 0, // Default to 0 if age is missing
+            bio: bio || "No bio available", // Default bio if missing
+            imageUrl: imageUrl || "https://via.placeholder.com/150", // Default image if missing
+            location: location || "Unknown Location", // Default location if missing
           })
         );
       }
@@ -131,6 +200,7 @@ const CallComponent = ({ email, role }) => {
         myIdRef.current = data.id;
         setMyId(data.id);
       } else if (data.type === "user_list") {
+        console.log("Received user list:", data.users); // Debug log
         setRawUsers(data.users);
       } else if (data.type === "no_speaker_available") {
         setStatus(
@@ -141,6 +211,11 @@ const CallComponent = ({ email, role }) => {
         setCallDetails({
           callId: data.callId,
           opponentEmail: data.opponentEmail,
+          opponentName: data.opponentName,
+          opponentAge: data.opponentAge,
+          opponentBio: data.opponentBio,
+          opponentImageUrl: data.opponentImageUrl,
+            opponentLocation: data.opponentLocation,
           targetId: data.senderId,
         });
         setStatus("Incoming Call...");
@@ -149,14 +224,14 @@ const CallComponent = ({ email, role }) => {
       } else if (data.type === "call_started") {
         setStatus("In a call");
       } else if (data.type === "call_accepted") {
-        const { callId, senderId, opponentEmail } = data;
-        setCallDetails({ callId, opponentEmail, targetId: senderId });
-        startCall(senderId, callId, opponentEmail, true);
+        const { callId, senderId, opponentEmail, opponentName, opponentAge, opponentBio, opponentImageUrl, opponentLocation } = data;
+        setCallDetails({ callId, opponentEmail, opponentName, opponentAge, opponentBio, opponentImageUrl, opponentLocation, targetId: senderId });
+        startCall(senderId, callId, opponentEmail, opponentName, opponentAge, opponentBio, opponentImageUrl, opponentLocation, true);
       } else if (data.type === "call_id_assigned") {
         setDbCallId(data.dbCallId);
       } else if (data.sdp) {
         if (!peerConnectionRef.current) {
-          startCall(data.senderId, data.callId, data.opponentEmail);
+          startCall(data.senderId, data.callId, data.opponentEmail, data.opponentName, data.opponentAge, data.opponentBio, data.opponentImageUrl, data.opponentLocation);
         }
 
         if (
@@ -175,6 +250,12 @@ const CallComponent = ({ email, role }) => {
                   sdp: peerConnectionRef.current.localDescription,
                   targetId: data.senderId,
                   type: "sdp",
+                  opponentEmail: data.opponentEmail,
+                  opponentName: data.opponentName,
+                  opponentAge: data.opponentAge,
+                  opponentBio: data.opponentBio,
+                  opponentImageUrl: data.opponentImageUrl,
+                    opponentLocation: data.opponentLocation,
                 })
               );
             }
@@ -198,7 +279,7 @@ const CallComponent = ({ email, role }) => {
       if (wsRef.current) wsRef.current.close();
       if (peerConnectionRef.current) peerConnectionRef.current.close();
     };
-  }, [email, role]);
+  }, [email, role, name, age, bio, imageUrl]);
 
   useEffect(() => {
     if (myId !== null && rawUsers.length > 0) {
@@ -237,13 +318,18 @@ const CallComponent = ({ email, role }) => {
     return `${formattedMinutes}:${formattedSeconds}`;
   };
 
-  const handleCallSpecificUser = (targetId, opponentEmail) => {
+  const handleCallSpecificUser = (targetId, opponentEmail, opponentName, opponentAge, opponentBio, opponentImageUrl, opponentLocation) => {
     if (wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(
         JSON.stringify({
           type: "call_request",
           targetId: targetId,
           opponentEmail: opponentEmail,
+          opponentName: opponentName,
+          opponentAge: opponentAge,
+          opponentBio: opponentBio,
+          opponentImageUrl: opponentImageUrl,
+            opponentLocation: opponentLocation,
         })
       );
       setStatus("Requesting Call...");
@@ -253,8 +339,8 @@ const CallComponent = ({ email, role }) => {
   const handleAcceptCall = async () => {
     if (wsRef.current.readyState === WebSocket.OPEN) {
       setStatus("Connecting...");
-      const { targetId, callId, opponentEmail } = callDetails;
-      await startCall(targetId, callId, opponentEmail);
+      const { targetId, callId, opponentEmail, opponentName, opponentAge, opponentBio, opponentImageUrl, opponentLocation } = callDetails;
+      await startCall(targetId, callId, opponentEmail, opponentName, opponentAge, opponentBio, opponentImageUrl, opponentLocation);
 
       if (
         peerConnectionRef.current &&
@@ -265,6 +351,11 @@ const CallComponent = ({ email, role }) => {
             type: "call_accepted",
             targetId: targetId,
             opponentEmail: opponentEmail,
+            opponentName: opponentName,
+            opponentAge: opponentAge,
+            opponentBio: opponentBio,
+            opponentImageUrl: opponentImageUrl,
+            opponentLocation: opponentLocation,
           })
         );
       }
@@ -309,11 +400,16 @@ const CallComponent = ({ email, role }) => {
 
     if (status === "In a call" && notifyServer) {
       const endTime = new Date().toISOString();
-      const { opponentEmail } = callDetails;
+      const { opponentEmail, opponentName, opponentAge, opponentBio, opponentImageUrl, opponentLocation } = callDetails;
 
       const callData = {
         learner_email: role === "learner" ? email : opponentEmail,
         speaker_email: role === "speaker" ? email : opponentEmail,
+        opponentName: opponentName,
+        opponentAge: opponentAge,
+        opponentBio: opponentBio,
+        opponentImageUrl: opponentImageUrl,
+        opponentLocation: opponentLocation,
         duration: callTime,
         startTime,
         endTime,
@@ -327,6 +423,21 @@ const CallComponent = ({ email, role }) => {
     if (showForm) {
       setShowRatingForm(true);
     }
+  };
+
+  const resetStates1 = () => {
+    setCallRequest(null);
+    setDbCallId(null);
+    setCallDetails({
+      opponentEmail: null,
+      opponentName: null,
+      opponentAge: null,
+      opponentBio: null,
+      opponentImageUrl: null,
+        opponentLocation: null,
+      targetId: null,
+      callId: null,
+    });
   };
 
   const handleRatingSubmit = (e) => {
@@ -354,20 +465,7 @@ const CallComponent = ({ email, role }) => {
     resetStates();
   };
 
-  const stylebutton2 = {
-    width: "100%",
-    padding: "15px 20px",
-    backgroundColor: "#facce4ff",
-    color: "#e94e9f",
-    fontSize: "18px",
-    fontWeight: "bold",
-    border: "none",
-    borderRadius: "50px",
-    cursor: "pointer",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    transition: "background-color 0.2s ease-in-out",
-    marginTop: "20%",
-  };
+  
 
   const stylebutton3 = {
     width: "100%",
@@ -382,7 +480,9 @@ const CallComponent = ({ email, role }) => {
     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
     transition: "background-color 0.2s ease-in-out",
     marginTop: "10%",
-    marginBottom:'10px'
+    marginBottom: '10px',
+    textTransform:"capitalize",
+    fontFamily: "'Funnel Display', sans-serif",  
   };
 
   const styles = {
@@ -390,7 +490,6 @@ const CallComponent = ({ email, role }) => {
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-
       minHeight: "70vh",
       minWidth: "360px",
       boxSizing: "border-box",
@@ -414,8 +513,7 @@ const CallComponent = ({ email, role }) => {
       width: "80%",
       height: "auto",
       borderRadius: "20px",
-
-      margin: "20px auto",
+      margin: "10px auto",
       justifyContent: "center",
       alignItems: "center",
     },
@@ -435,7 +533,15 @@ const CallComponent = ({ email, role }) => {
       fontSize: "24px",
       fontWeight: "bold",
       color: "#333",
+      marginBottom: "0px",
+      textAlign: "left",
+    },
+    location: {
+      fontSize: "24px",
+      fontWeight: "bold",
+      color: "#333",
       marginBottom: "5px",
+      marginTop:'0px',
       textAlign: "left",
     },
     country: {
@@ -452,7 +558,26 @@ const CallComponent = ({ email, role }) => {
       cursor: "pointer",
       fontSize: "16px",
       fontWeight: "bold",
+      textTransform: "capitalize",
+      fontFamily: "'Funnel Display', sans-serif",  
     },
+  };
+
+  const stylebutton2 = {
+    width: "100%",
+    padding: "15px 20px",
+    backgroundColor: "#facce4ff",
+    color: "#e94e9f",
+    fontSize: "18px",
+    fontWeight: "bold",
+    border: "none",
+    borderRadius: "50px",
+    cursor: "pointer",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    transition: "background-color 0.2s ease-in-out",
+    marginTop: "20%",
+    textTransform:"capitalize",
+    fontFamily: "'Funnel Display', sans-serif",  
   };
 
   const buttonStyle = {
@@ -467,8 +592,11 @@ const CallComponent = ({ email, role }) => {
     cursor: "pointer",
     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
     transition: "background-color 0.2s ease-in-out",
+    textTransform:"capitalize",
+    fontFamily: "'Funnel Display', sans-serif",  
   };
 
+ 
   // Swipe handlers
   const handlers = useSwipeable({
     onSwipedLeft: () => {
@@ -510,8 +638,7 @@ const CallComponent = ({ email, role }) => {
         <div {...handlers} style={{ width: "100%", touchAction: "pan-y" }}>
           <div>
             <h1 style={{ margin: "0px", color: "#e94e9f", textAlign: "left" }}>
-              {currentUser.description ||
-                "A cool guy with a beard, talks beers"}
+              {currentUser.bio || "A cool guy with a beard, talks beers"}
             </h1>
 
             <div style={styles.imageContainer}>
@@ -523,20 +650,32 @@ const CallComponent = ({ email, role }) => {
                   currentUser.imageUrl ||
                   "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
                 }
-                alt={currentUser.email}
+                alt={currentUser.name || currentUser.email}
                 className="profile-image"
               />
             </div>
-            <h1 style={styles.nameAndAge}>{currentUser.email.split("@")[0]}</h1>
-
+            <h1 style={styles.nameAndAge}>
+              {currentUser.name || currentUser.email.split("@")[0]},{' '}
+              {currentUser.age || "N/A"}
+            </h1>
+                <h1 style={styles.location}>
+              {currentUser.location || "Unknown Location"}
+            </h1>
             {role === "learner" && (
               <button
                 style={buttonStyle}
                 onClick={() =>
-                  handleCallSpecificUser(currentUser.id, currentUser.email)
+                  handleCallSpecificUser(
+                    currentUser.id,
+                    currentUser.email,
+                    currentUser.name,
+                    currentUser.age,
+                    currentUser.bio,
+                    currentUser.imageUrl
+                  )
                 }
               >
-                Call with {currentUser.email.split("@")[0]}
+                Call with {currentUser.name || currentUser.email.split("@")[0]}
               </button>
             )}
           </div>
@@ -545,12 +684,40 @@ const CallComponent = ({ email, role }) => {
         <>
           {showRatingForm ? (
             <form onSubmit={handleRatingSubmit} className="rating-form">
-              <h3>Rate Your Call</h3>
-              <p>
-                How would you rate your experience with{" "}
-                {callDetails.opponentEmail}?
-              </p>
-              <div className="rating-stars">
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "left",
+                  width: "100%",
+                  maxWidth: "360px",
+                  minWidth: "360px",
+                }}
+              >
+                <div>
+                  <h1 style={{ margin: "0px", color: "#000000ff" }}>
+  Rate {callDetails.opponentName?.split(' ')[0] || callDetails.opponentEmail.split("@")[0]}
+</h1>
+                </div>
+                <div>
+                  <img
+                    src={
+                      callDetails.opponentImageUrl ||
+                      "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
+                    }
+                    width={"50px"}
+                    height={"50px"}
+                    style={{
+                      borderRadius: "10px",
+                      objectFit: "cover",
+                    }}
+                    alt="Profile"
+                  />
+                </div>
+              </div>
+              
+              <div className="rating-stars" style={{ margin:'10px auto',backgroundColor:"#facce4ff",width:'95%',padding:'10px',borderRadius:'20px' }}>
                 {[1, 2, 3, 4, 5].map((star) => (
                   <span
                     key={star}
@@ -562,22 +729,44 @@ const CallComponent = ({ email, role }) => {
                 ))}
               </div>
               <textarea
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-                placeholder="Share your feedback..."
-              ></textarea>
+  value={feedback}
+  onChange={(e) => setFeedback(e.target.value)}
+  placeholder="Submit a review..."
+  style={{
+    width: "100%",
+    boxSizing: "border-box",
+    minHeight: "150px",
+    maxHeight: "300px",
+    resize: "vertical",
+    backgroundColor: "#facce4ff",
+    color: "#000000ff",
+    border: "0px solid #f9a8d4",
+    borderRadius: "20px",
+    padding: "20px",
+    fontSize: "16px",
+    lineHeight: "1.5",
+    fontFamily: "inherit",
+    outline: "none",
+  }}
+></textarea>
+              <br></br>
               <button
                 type="submit"
-                className="submit-review-button"
-                disabled={rating === 0}
+                style={stylebutton2}
+                onClick={() => {
+                  resetStates1();
+                  window.location.reload();
+                }}
+                
+
               >
-                Submit Review
+                Skip
               </button>
               <button
                 style={{ ...buttonStyle, marginTop: "10px" }}
-                onClick={() => window.location.reload()}
+                disabled={rating === 0}
               >
-                Skip
+                Submit review
               </button>
             </form>
           ) : (
@@ -585,69 +774,71 @@ const CallComponent = ({ email, role }) => {
               {status === "In a call" && (
                 <>
                   <div style={styles.outerContainer}>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        maxWidth: "360px",
-                      }}
-                    >
-                      <div>
-                        <h1 style={{ margin: "0px", color: "#000000ff" }}>
-                          You're talking to{" "}
-                          {callDetails.opponentEmail.split("0")[0]}
-                        </h1>
-                      </div>
-                      <div style={{ textAlign: "center" }}>
-                        <img
-                          src="https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
-                          width={"50px"}
-                          height={"50px"}
-                          style={{
-                            borderRadius: "10px",
-                            objectFit: "cover",
-                            margin: "0 auto",
-                          }}
-                          alt="Profile"
-                        />
-                      </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      maxWidth: "360px",
+                    }}
+                  >
+                    <div>
+                      <h1 style={{ margin: "0px", color: "#000000ff", lineHeight:'normal' }}>
+                        You're talking to {callDetails.opponentName || callDetails.opponentEmail.split("@")[0]}
+                      </h1>
                     </div>
-                    <div style={{ marginTop: "25%", textAlign: "center" }}>
+                    <div style={{ textAlign: "center" }}>
                       <img
-                        src={imgsound}
+                        src={
+                          callDetails.opponentImageUrl ||
+                          "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
+                        }
                         width={"50px"}
                         height={"50px"}
-                        style={{ borderRadius: "10px", objectFit: "cover" }}
-                        alt="freq"
+                        style={{
+                          borderRadius: "10px",
+                          objectFit: "cover",
+                          margin: "0 auto",
+                        }}
+                        alt="Profile"
                       />
-                      <h1>
-                        {" "}
-                        <strong>{formatTime(callTime)}</strong>
-                      </h1>
-                      <div onClick={toggleMute}>
-                        <img
-                          src={isMuted ? imgmute : imgunmute}
-                          width={"30px"}
-                          height={"30px"}
-                          style={{
-                            borderRadius: "50px",
-                            objectFit: "cover",
-                            marginBottom: "8%",
-                            backgroundColor: "#facce4ff",
-                            padding: "15px",
-                          }}
-                          alt="mic"
-                        />
-                      </div>
                     </div>
-                    <button
-                      onClick={() => endCall(true, true)}
-                      disabled={status === "Disconnected"}
-                      style={stylebutton2}
-                    >
-                      End Call
-                    </button>
                   </div>
+                  <div style={{ marginTop: "25%", textAlign: "center" }}>
+                    <img
+                      src={imgsound}
+                      width={"50px"}
+                      height={"50px"}
+                      style={{ borderRadius: "10px", objectFit: "cover" }}
+                      alt="freq"
+                    />
+                    <h1 style={{ margin: "0px", color: "#000000ff" }}>
+                      {formatTime(callTime)}
+                    </h1>
+                    <div onClick={toggleMute} style={{ cursor: "pointer" }}>
+                      <img
+                        src={isMuted ? imgmute : imgunmute}
+                        width={"30px"}
+                        height={"30px"}
+                        style={{
+                          borderRadius: "50px",
+                          objectFit: "cover",
+                          margin: "20%",
+                          backgroundColor: "#facce4ff",
+                          padding: "15px",
+                        }}
+                        alt="mic"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => endCall(true, true)}
+                    disabled={status === "Disconnected"}
+                    style={stylebutton2}
+                  >
+                    End Call
+                  </button>
+                </div>
                 </>
               )}
               {status === "Requesting Call..." && (
@@ -670,12 +861,15 @@ const CallComponent = ({ email, role }) => {
                   >
                     <div>
                       <h1 style={{ margin: "0px", color: "#000000ff" }}>
-                        {callDetails.opponentEmail.split("0")[0]} is calling...
+                        {callDetails.opponentName || callDetails.opponentEmail.split("@")[0]} is calling...
                       </h1>
                     </div>
                     <div style={{ textAlign: "center" }}>
                       <img
-                        src="https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
+                        src={
+                          callDetails.opponentImageUrl ||
+                          "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
+                        }
                         width={"50px"}
                         height={"50px"}
                         style={{
@@ -689,7 +883,7 @@ const CallComponent = ({ email, role }) => {
                   </div>
                   <div style={{ marginTop: "5%", textAlign: "left", backgroundColor: "#facce4ff", padding: "20px", borderRadius: "30px",margin:'10px' }}>
                     <h4 style={{marginTop:'0px',fontSize:'20px',marginBottom:'5px'}}>About</h4>
-                    {callDetails.description || "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam."}
+                    {callDetails.opponentBio || "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam."}
                 <h4 style={{marginTop:'10px',fontSize:'20px',marginBottom:'5px'}}>Interests</h4>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
   {(callDetails.interests || "Reading, Traveling, Music, Sports")

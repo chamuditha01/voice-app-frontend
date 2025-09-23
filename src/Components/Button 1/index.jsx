@@ -1,17 +1,28 @@
 import React from 'react';
 import styled from 'styled-components';
 
+const ButtonContainer = styled.div`
+  position: fixed;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 360px;
+  box-sizing: border-box;
+  z-index: 1000;
+`;
+
 const StyledButton = styled.button`
   width: 100%;
-  padding: 15px 20px;
-  background-color: #000000; /* The pink color */
+  padding: 20px 20px;
+  background-color: #000000;
   color: white;
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 20px;
+  font-weight: normal;
   border: none;
-  border-radius: 50px; /* Adjust to match the button's roundness */
+  border-radius: 50px;
   cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Adds a subtle shadow */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: background-color 0.2s ease-in-out;
   text-transform: capitalize;
   font-family: 'Funnel Display', sans-serif;
@@ -27,9 +38,11 @@ const StyledButton = styled.button`
 
 const Button = ({ text, onClick }) => {
   return (
-    <StyledButton onClick={onClick}>
-      {text}
-    </StyledButton>
+    <ButtonContainer>
+      <StyledButton onClick={onClick}>
+        {text}
+      </StyledButton>
+    </ButtonContainer>
   );
 };
 

@@ -2,10 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import "./index.css";
 import { useSwipeable } from "react-swipeable";
 import Header from "../../Components/Header";
-import imgunmute from "./mic.png";
-import imgmute from "./microphone.png";
+import imgunmute from "./microphone.png";
+import imgmute from "./mute-button.png";
 import imgsound from "./sound.png";
 import ringtone from './ringtone.mp3';
+import Button3 from "../../Components/Button 3";
+import { supabase } from "../../supabaseClient";
 
 const CallComponent = ({ email, role }) => {
   const [status, setStatus] = useState("Disconnected");
@@ -13,6 +15,7 @@ const CallComponent = ({ email, role }) => {
   const [callRequest, setCallRequest] = useState(null);
   const localStreamRef = useRef(null);
   const peerConnectionRef = useRef(null);
+  const [online, setOnline] = useState(true);
   const wsRef = useRef(null);
   const myIdRef = useRef(null);
   const [ringtoneAudio, setRingtoneAudio] = useState(null);
@@ -41,6 +44,44 @@ const CallComponent = ({ email, role }) => {
   const [bio, setBio] = useState("");  // Current user's bio
   const [imageUrl, setImageUrl] = useState(""); // Current user's imageUrl
   const [location, setLocation] = useState(""); // Current user's location
+  const [myimgUrl, setmyImgUrl] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Fetch the user's profile from the public.profiles table
+        const { data, error } = await supabase
+          .from('users')
+          .select('imageUrl')
+          .eq('email', email) // Assuming you have an 'email' column in your profiles table
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        if (data) {
+          setmyImgUrl(data.imageUrl);
+        } else {
+          setmyImgUrl(null);
+        }
+      } catch (err) {
+        console.error('Error fetching profile:', err.message);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (email) {
+      fetchProfileData();
+    }
+  }, [email]);
 
   useEffect(() => {
     // Initialize the audio object on component mount
@@ -172,7 +213,7 @@ useEffect(() => {
   };
 
   useEffect(() => {
-    wsRef.current = new WebSocket("ws://localhost:8080");
+    wsRef.current = new WebSocket("wss://voice-app-production.up.railway.app");
 
     wsRef.current.onopen = () => {
       console.log("Connected to signaling server");
@@ -227,7 +268,11 @@ useEffect(() => {
         const { callId, senderId, opponentEmail, opponentName, opponentAge, opponentBio, opponentImageUrl, opponentLocation } = data;
         setCallDetails({ callId, opponentEmail, opponentName, opponentAge, opponentBio, opponentImageUrl, opponentLocation, targetId: senderId });
         startCall(senderId, callId, opponentEmail, opponentName, opponentAge, opponentBio, opponentImageUrl, opponentLocation, true);
-      } else if (data.type === "call_id_assigned") {
+      }
+      else if (data.type === "call_rejected") {
+   
+    
+  } else if (data.type === "call_id_assigned") {
         setDbCallId(data.dbCallId);
       } else if (data.sdp) {
         if (!peerConnectionRef.current) {
@@ -373,6 +418,7 @@ useEffect(() => {
     }
 
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      console.log("Notifying server of call rejection");
       wsRef.current.send(
         JSON.stringify({
           type: "call_rejected",
@@ -386,6 +432,7 @@ useEffect(() => {
   };
 
   const endCall = (notifyServer = true, showForm = false) => {
+    console.log("Ending call...");
     if (
       peerConnectionRef.current &&
       peerConnectionRef.current.signalingState !== "closed"
@@ -469,31 +516,37 @@ useEffect(() => {
 
   const stylebutton3 = {
     width: "100%",
-    padding: "15px 20px",
+    padding: "20px 20px",
     backgroundColor: "#f9e7f3",
     color: "#e14e97",
-    fontSize: "18px",
-    fontWeight: "bold",
+    fontSize: "20px",
+    fontWeight: "normal",
     border: "none",
     borderRadius: "50px",
     cursor: "pointer",
     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
     transition: "background-color 0.2s ease-in-out",
     marginTop: "10%",
-    marginBottom: '10px',
     textTransform:"capitalize",
     fontFamily: "'Funnel Display', sans-serif",  
   };
 
   const styles = {
-    outerContainer: {
+    parentContainer: {
       display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      minHeight: "70vh",
-      minWidth: "360px",
-      boxSizing: "border-box",
-      maxWidth: "360px",
+      justifyContent: "center", /* This centers the child horizontally */
+    },
+    outerContainer: {
+ display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        minHeight: '100vh',
+        backgroundColor: '#ffffffff',
+        boxSizing: 'border-box',
+        maxWidth: '360px',
+        width:"100%",
+        marginLeft:'35px',
+        marginRight:'35px' 
     },
     loadingContainer: {
       display: "flex",
@@ -530,7 +583,7 @@ useEffect(() => {
       paddingLeft: "10px",
     },
     nameAndAge: {
-      fontSize: "24px",
+      fontSize: "32px",
       fontWeight: "bold",
       color: "#333",
       marginBottom: "0px",
@@ -565,11 +618,11 @@ useEffect(() => {
 
   const stylebutton2 = {
     width: "100%",
-    padding: "15px 20px",
+    padding: "20px 20px",
     backgroundColor: "#f9e7f3",
     color: "#e14e97",
-    fontSize: "18px",
-    fontWeight: "bold",
+    fontSize: "20px",
+    fontWeight: "normal",
     border: "none",
     borderRadius: "50px",
     cursor: "pointer",
@@ -582,11 +635,11 @@ useEffect(() => {
 
   const buttonStyle = {
     width: "100%",
-    padding: "15px 20px",
+    padding: "20px 20px",
     backgroundColor: "#e14e97",
     color: "white",
-    fontSize: "18px",
-    fontWeight: "bold",
+    fontSize: "20px",
+    fontWeight: "normal",
     border: "none",
     borderRadius: "50px",
     cursor: "pointer",
@@ -623,80 +676,89 @@ useEffect(() => {
     }
   };
 
+  const handleOnline = () => {
+    if(online){
+console.log("Going offline...");
+    wsRef.current.close();
+    setStatus("Disconnected");
+    setOnline(false);
+  }
+  else{
+    console.log("Going online...");
+    window.location.reload();
+    setOnline(true);
+  }
+};
+
   return (
+    <div style={styles.parentContainer}>
     <div style={styles.outerContainer}>
       <Header />
 
       {!callRequest &&
-      status !== "In a call" &&
-      status !== "Connecting..." &&
-      status !== "Requesting Call..." &&
-      status !==
-        "No speakers are currently available. Please try again later." &&
-      !showRatingForm &&
-      availableUsers.length > 0 ? (
-        <div {...handlers} style={{ width: "100%", touchAction: "pan-y" }}>
-          <div>
-            <h1 style={{ margin: "0px", color: "#e14e97", textAlign: "left" }}>
-              {currentUser.bio || "A cool guy with a beard, talks beers"}
-            </h1>
-
-            <div style={styles.imageContainer}>
-              <img
-                width={"280px"}
-                height={"320px"}
-                style={{ objectFit: "cover", borderRadius: "20px" }}
-                src={
-                  currentUser.imageUrl ||
-                  "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
-                }
-                alt={currentUser.name || currentUser.email}
-                className="profile-image"
-              />
-            </div>
-            <h1 style={styles.nameAndAge}>
-              {currentUser.name || currentUser.email.split("@")[0]},{' '}
-              {currentUser.age || "N/A"}
-            </h1>
-                <h1 style={styles.location}>
-              {currentUser.location || "Unknown Location"}
-            </h1>
-            {role === "learner" && (
-              <button
-                style={buttonStyle}
-                onClick={() =>
-                  handleCallSpecificUser(
-                    currentUser.id,
-                    currentUser.email,
-                    currentUser.name,
-                    currentUser.age,
-                    currentUser.bio,
-                    currentUser.imageUrl
-                  )
-                }
-              >
-                Call with {currentUser.name || currentUser.email.split("@")[0]}
-              </button>
-            )}
-          </div>
+  status !== "In a call" &&
+  status !== "Connecting..." &&
+  status !== "Requesting Call..." &&
+  !showRatingForm ? (
+       <div style={{width:"100%"}}>
+ <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      maxWidth: "360px",
+                      gap:'20px',
+                    }}
+                  >
+                    <div >
+                      <h1 style={{ margin: "0px", color: "#e14e97", fontSize:"32px", fontWeight:'bold', lineHeight:"1.2" }}>
+                       You're {online ? "Online" : "Offline"}
+                      </h1>
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      <img
+                        src={
+                          myimgUrl ||
+                          "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
+                        }
+                        width={"50px"}
+                        height={"50px"}
+                        style={{
+                          borderRadius: "10px",
+                          objectFit: "cover",
+                          margin: "0 auto",
+                        }}
+                        alt="Profile"
+                      />
+                    </div>
+                   
+                  </div>
+                  <div style={{marginTop:"100%",width:"100%"}}>
+                   <Button3 
+  text={online ? "Go Offline" : "Go Online"} 
+  onClick={handleOnline} 
+/> 
+                    </div>
+        <div>
+                  </div>
         </div>
       ) : (
         <>
           {showRatingForm ? (
-            <form onSubmit={handleRatingSubmit} className="rating-form">
+            <form onSubmit={handleRatingSubmit} className="rating-form" style={{width:'100%'}}>
               <div
                 style={{
                   display: "flex",
                   flexDirection: "row",
-                  justifyContent: "space-between",
+                  
                   alignItems: "left",
                   width: "100%",
                   maxWidth: "360px",
-                  minWidth: "360px",
+                  width:'100%',
+                  gap:'20px',
                 }}
               >
                 <div>
-                  <h1 style={{ margin: "0px", color: "#000000" }}>
+                  <h1 style={{ margin: "0px", color: "#000000", fontSize:"32px", fontWeight:'bold', lineHeight:"1.2" }}>
   Rate {callDetails.opponentName?.split(' ')[0] || callDetails.opponentEmail.split("@")[0]}
 </h1>
                 </div>
@@ -717,17 +779,35 @@ useEffect(() => {
                 </div>
               </div>
               
-              <div className="rating-stars" style={{ margin:'10px auto',backgroundColor:"#facce4ff",width:'95%',padding:'10px',borderRadius:'20px' }}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <span
-                    key={star}
-                    className={star <= rating ? "star active" : "star"}
-                    onClick={() => setRating(star)}
-                  >
-                    &#9733;
-                  </span>
-                ))}
-              </div>
+              <div
+  className="rating-hexagons"
+  style={{
+    margin: "10px auto",
+    backgroundColor: "#facce4ff",
+    width: "100%",
+    paddingBottom: "5px",
+    borderRadius: "30px",
+    display: "flex",
+    justifyContent: "center",
+    gap: "10px",
+  }}
+>
+  {[1, 2, 3, 4, 5].map((hexagon) => (
+    <span
+      key={hexagon}
+      className={hexagon <= rating ? "hexagon active" : "hexagon"}
+      onClick={() => setRating(hexagon)}
+      style={{
+        cursor: "pointer",
+        fontSize: "64px",
+        color: hexagon <= rating ? "#e14e97" : "#A9A9A9",
+        transform: "rotate(90deg)", // This is the key change
+      }}
+    >
+      &#x2B22;
+    </span>
+  ))}
+</div>
               <textarea
   value={feedback}
   onChange={(e) => setFeedback(e.target.value)}
@@ -741,7 +821,7 @@ useEffect(() => {
     backgroundColor: "#facce4ff",
     color: "#000000",
     border: "0px solid #f9a8d4",
-    borderRadius: "20px",
+    borderRadius: "30px",
     padding: "20px",
     fontSize: "16px",
     lineHeight: "1.5",
@@ -750,6 +830,8 @@ useEffect(() => {
   }}
 ></textarea>
               <br></br>
+               <div style={{ position: 'fixed', bottom: '135px', width: '80%', maxWidth: '360px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
+ 
               <button
                 type="submit"
                 style={stylebutton2}
@@ -762,27 +844,32 @@ useEffect(() => {
               >
                 Skip
               </button>
+              </div>
+               <div style={{ position: 'fixed', bottom: '50px', width: '80%', maxWidth: '360px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
+ 
               <button
                 style={{ ...buttonStyle, marginTop: "10px" }}
                 disabled={rating === 0}
               >
                 Submit review
               </button>
+              </div>
             </form>
           ) : (
             <>
               {status === "In a call" && (
                 <>
-                  <div style={styles.outerContainer}>
+                  <div >
                   <div
                     style={{
                       display: "flex",
                       flexDirection: "row",
                       maxWidth: "360px",
+                      gap:'20px'
                     }}
                   >
                     <div>
-                      <h1 style={{ margin: "0px", color: "#000000", lineHeight:'normal' }}>
+                      <h1 style={{ margin: "0px", color: "#000000", lineHeight:'normal' ,fontSize:'32px',}}>
                         You're talking to {callDetails.opponentName || callDetails.opponentEmail.split("@")[0]}
                       </h1>
                     </div>
@@ -803,15 +890,29 @@ useEffect(() => {
                       />
                     </div>
                   </div>
-                  <div style={{ marginTop: "25%", textAlign: "center" }}>
-                    <img
+                 <div style={{
+  textAlign: "center",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  height: "600px",
+  
+  /* --- Centering Styles --- */
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+}}>   
+<div  style={{ cursor: "pointer" }}>
+  <img
                       src={imgsound}
                       width={"50px"}
                       height={"50px"}
                       style={{ borderRadius: "10px", objectFit: "cover" }}
                       alt="freq"
                     />
-                    <h1 style={{ margin: "0px", color: "#000000" }}>
+                    </div>
+                    <h1 style={{ margin: "0px", color: "#000000", fontSize:'48px'}}>
                       {formatTime(callTime)}
                     </h1>
                     <div onClick={toggleMute} style={{ cursor: "pointer" }}>
@@ -822,7 +923,7 @@ useEffect(() => {
                         style={{
                           borderRadius: "50px",
                           objectFit: "cover",
-                          margin: "20%",
+                         
                           backgroundColor: "#facce4ff",
                           padding: "15px",
                         }}
@@ -831,13 +932,15 @@ useEffect(() => {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => endCall(true, true)}
-                    disabled={status === "Disconnected"}
-                    style={stylebutton2}
-                  >
-                    End Call
-                  </button>
+                 <div style={{ position: 'fixed', bottom: '50px', width: '80%', maxWidth: '360px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
+  <button
+    onClick={() => endCall(true, true)}
+    disabled={status === "Disconnected"}
+    style={stylebutton2}
+  >
+    End Call
+  </button>
+</div>
                 </div>
                 </>
               )}
@@ -851,16 +954,17 @@ useEffect(() => {
                 </p>
               )}
               {callRequest && (
-                <div style={styles.outerContainer}>
+                <div >
                   <div
                     style={{
                       display: "flex",
                       flexDirection: "row",
                       maxWidth: "360px",
+                      justifyContent:"space-around"
                     }}
                   >
                     <div>
-                      <h1 style={{ margin: "0px", color: "#000000" }}>
+                      <h1 style={{ margin: "0px", color: "rgb(225, 78, 151)" }}>
                         {callDetails.opponentName || callDetails.opponentEmail.split("@")[0]} is calling...
                       </h1>
                     </div>
@@ -881,7 +985,7 @@ useEffect(() => {
                       />
                     </div>
                   </div>
-                  <div style={{ marginTop: "5%", textAlign: "left", backgroundColor: "#facce4ff", padding: "20px", borderRadius: "30px",margin:'10px' }}>
+                  <div style={{ marginTop: "5%", textAlign: "left", backgroundColor: "#f9e7f3", padding: "20px", borderRadius: "30px" }}>
                     <h4 style={{marginTop:'0px',fontSize:'20px',marginBottom:'5px'}}>About</h4>
                     {callDetails.opponentBio || "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam."}
                 <h4 style={{marginTop:'10px',fontSize:'20px',marginBottom:'5px'}}>Interests</h4>
@@ -903,19 +1007,25 @@ useEffect(() => {
     ))}
 </div>
                   </div>
+                   <div style={{ position: 'fixed', bottom: '135px', width: '80%', maxWidth: '360px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
+ 
                   <button onClick={handleAcceptCall} style={stylebutton3}>
                     Accept
                   </button>
-                  
+                  </div>
+                   <div style={{ position: 'fixed', bottom: '50px', width: '80%', maxWidth: '360px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
+ 
                   <button onClick={handleRejectCall} style={buttonStyle}>
                     Reject
                   </button>
+                  </div>
                 </div>
               )}
             </>
           )}
         </>
       )}
+    </div>
     </div>
   );
 };

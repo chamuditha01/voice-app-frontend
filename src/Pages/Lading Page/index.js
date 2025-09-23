@@ -27,7 +27,7 @@ const TalktuLandingPage = () => {
 
 const styles = {
   container: {
-    backgroundColor: '#ff69b4', // A bright pink color
+    backgroundColor: '#e14e97', // A bright pink color
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -38,8 +38,7 @@ const styles = {
     fontFamily: 'sans-serif' // A clean, modern font
   },
   logoSvg: {
-    width: '237px',
-    height: '60px',
+    width: '220px',
     fill: '#fff' // White color for the logo
   }
 };

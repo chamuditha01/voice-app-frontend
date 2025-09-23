@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../Components/Header';
 import Button2 from '../../Components/Button 2';
 import { supabase } from '../../supabaseClient';
+import Button4 from '../../Components/Button4';
 
 const UpdateProfile = () => {
     const navigate = useNavigate();
@@ -107,17 +108,20 @@ const UpdateProfile = () => {
 
     if (loading) {
         return (
+            <div style={styles.parentContainer}>
             <div style={styles.container}>
                 <Header />
-                <h1 style={{ margin: 'auto', textAlign: 'center', color: '#e94e9f' }}>Loading profile...</h1>
+                <h1 style={{ margin: 'auto', textAlign: 'center', color: '#e94e9f' }}>...</h1>
+            </div>
             </div>
         );
     }
 
     return (
+        <div style={styles.parentContainer}>
         <div style={styles.container}>
             <Header />
-            <h1 style={{ margin: '0px', color: '#e94e9f', textAlign: 'left' }}>Update Your Profile</h1>
+            <h1 style={{ margin: '0px', color: '#e94e9f', textAlign: 'left',marginBottom:'40px' }}>Edit Profile</h1>
 
             <form onSubmit={handleUpdateProfile} style={{ width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div style={styles.avatarContainer}>
@@ -126,9 +130,10 @@ const UpdateProfile = () => {
                     ) : (
                         <div style={styles.noAvatarPlaceholder}>No Image</div>
                     )}
+                    {/*
                     <label style={styles.avatarUploadLabel} htmlFor="single">
                         {uploading ? 'Uploading...' : 'Upload an image'}
-                    </label>
+                    </label>*/}
                     <input
                         style={{ visibility: 'hidden', position: 'absolute' }}
                         type="file"
@@ -172,8 +177,7 @@ const UpdateProfile = () => {
                         style={styles.input}
                     />
                 </div>
-                <div style={{display:'flex',flexDirection:'row',width:'100%',gap:'10px',height:'70px'}}>
-                <div style={{ width: '100%', marginBottom: '20px' }}>
+                 <div style={{ width: '100%', marginBottom: '20px' }}>
                     <input
                         placeholder="Age"
                         type="number"
@@ -193,40 +197,49 @@ const UpdateProfile = () => {
                         style={styles.input}
                     />
                 </div>
-                </div>
-                <Button2 text="Update Profile" onClick={handleUpdateProfile} />
+               
+                <Button4 text="Save" onClick={handleUpdateProfile} />
             </form>
+        </div>
         </div>
     );
 };
 
 const styles = {
+    parentContainer: {
+      display: "flex",
+      justifyContent: "center", /* This centers the child horizontally */
+    },
     container: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'left',
         minHeight: '100vh',
-        backgroundColor: '#f0f2f5',
+        backgroundColor: '#fff',
         boxSizing: 'border-box',
         maxWidth: '360px',
-        minWidth: '360px',
-        
+        marginRight:'35px',
+        marginLeft:'35px',
+        width:'100%',
     },
     input: {
-        width: '100%',
-        border: 'none',
-        borderBottom: '1px solid #ccc',
-        padding: '10px 0',
-        background: 'transparent',
-        fontSize: '18px',
-        color: '#333',
-        outline: 'none',
-    },
+    width: '100%',
+    border: 'none',
+    borderBottom: '1px solid #ccc',
+    padding: '10px 0px',
+    background: 'transparent',
+    fontSize: '32px',
+    lineHeight: '1.2',
+    color: '#000000',
+    outline: 'none',
+    fontWeight: "normal",
+    fontFamily: "'Funnel Display', sans-serif",  // 👈 Added
+},
     avatarContainer: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        marginBottom: '20px',
+        
     },
     avatarImage: {
         width: '100px',

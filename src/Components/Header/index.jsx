@@ -12,6 +12,7 @@ const HeaderContainer = styled.div`
   width: 100%;
   max-width: 450px;
   margin: 0 auto;
+  margin-bottom: 25px;
   box-sizing: border-box;
 `;
 
@@ -38,21 +39,52 @@ const MenuLine1 = styled.div`
   margin-left: auto;
 `;
 
-const Header = () => {
+// New styled component for the close icon
+const CloseIcon = styled.div`
+  cursor: pointer;
+  position: relative;
+  width: 25px;
+  height: 25px;
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 25px;
+    height: 3px;
+    background-color: #333;
+  }
+  &::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+  &::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+`;
+
+const Header = ({ showCloseButton, onClose }) => {
   const navigate = useNavigate();
 
   const handleLogoClick = () => {
     const userEmail = localStorage.getItem('userEmail');
+    const userRole = localStorage.getItem('userRole');
+
     if (userEmail) {
-      navigate('/');
+      if (userRole === 'learner') {
+        navigate('/speakers');
+      } else if (userRole === 'speaker') {
+        navigate('/sp-dashboard');
+      } else {
+        navigate('/');
+      }
     } else {
-      navigate('/login'); 
+      navigate('/login');
     }
   };
 
-  const handlemenuClick = () => {
+  const handleMenuClick = () => {
     navigate('/menu');
-  }
+  };
 
   return (
     <HeaderContainer>
@@ -81,12 +113,16 @@ const Header = () => {
           <path className="st0" d="M491.6,142c-13.9,0-24.6-3.7-32-11-7.5-7.3-11.2-17.4-11.2-30v-60.9h27.7v55.6c0,7.2,1.9,12.7,5.6,16.3,3.7,3.6,9.3,5.4,16.8,5.4s13.6-1.9,17.8-5.8c4.2-3.9,6.3-9.5,6.3-16.7v-54.7h27.7v72.7h13.7v27.4h-28v-16.3h-7c-4,5.9-8.9,10.4-14.6,13.5-5.7,3.1-13.3,4.7-22.6,4.7Z"/>
         </svg>
       </div>
-      <div onClick={handlemenuClick}>
-      <MenuIcon>
-        <MenuLine />
-        <MenuLine1 />
-      </MenuIcon>
-      </div>
+      {showCloseButton ? (
+        <CloseIcon onClick={onClose} />
+      ) : (
+        <div onClick={handleMenuClick}>
+          <MenuIcon>
+            <MenuLine />
+            <MenuLine1 />
+          </MenuIcon>
+        </div>
+      )}
     </HeaderContainer>
   );
 };

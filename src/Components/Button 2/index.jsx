@@ -3,11 +3,11 @@ import styled from 'styled-components';
 
 const StyledButton = styled.button`
   width: 100%;
-  padding: 15px 20px;
+  padding: 20px 20px;
   background-color: #e14e97; /* The pink color */
   color: white;
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 20px;
+  font-weight: normal;
   border: none;
   border-radius: 50px; /* Adjust to match the button's roundness */
   cursor: pointer;

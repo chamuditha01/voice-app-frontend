@@ -1,57 +1,35 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../Components/Header';
 import Button from '../../Components/Button 1';
+import { useRef } from 'react';
+import { supabase } from '../../supabaseClient';
 
 const HomeScreen = () => {
     const navigate = useNavigate();
     const [availableUsers, setAvailableUsers] = useState([]);
     const [gridUsers, setGridUsers] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
-    const wsRef = useRef(null);
 
     const usersPerPage = 4;
     const intervalRef = useRef(null);
 
-    // This useEffect handles the WebSocket connection and data fetching
+    // This useEffect handles data fetching from Supabase
     useEffect(() => {
-        // Initialize WebSocket connection
-        wsRef.current = new WebSocket('ws://localhost:8080');
+        const fetchUsers = async () => {
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                 // Fetch all users with the 'speaker' role
 
-        wsRef.current.onopen = () => {
-            console.log('WebSocket connection opened from HomeScreen');
-            // Send user info to register with the server, which should trigger a user_list broadcast
-            wsRef.current.send(JSON.stringify({
-                type: 'user_info',
-                email: 'homescreen_guest', // Use a temporary identifier for non-logged-in users
-                role: 'guest'
-            }));
-        };
-
-        wsRef.current.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'user_list') {
-                console.log('Received user list:', data.users);
-                // Filter out the guest user itself and any users in a call
-                const filteredUsers = data.users.filter(user => user.role !== 'guest' && !user.inCall);
-                setAvailableUsers(filteredUsers);
+            if (error) {
+                console.error("Error fetching users:", error.message);
+            } else {
+                setAvailableUsers(data);
             }
         };
 
-        wsRef.current.onclose = () => {
-            console.log('WebSocket connection closed');
-        };
-
-        wsRef.current.onerror = (error) => {
-            console.error('WebSocket error:', error);
-        };
-
-        // Clean up the WebSocket connection on component unmount
-        return () => {
-            if (wsRef.current) {
-                wsRef.current.close();
-            }
-        };
+        fetchUsers();
     }, []);
 
     // Set up the interval for swapping profiles
@@ -61,7 +39,7 @@ const HomeScreen = () => {
                 setCurrentPage(prevPage => (prevPage + 1) % Math.ceil(availableUsers.length / usersPerPage));
             }, 3000); // Swaps every 3 seconds
         } else {
-             // Clear the interval if there are not enough users to swap
+            // Clear the interval if there are not enough users to swap
             if (intervalRef.current) {
                 clearInterval(intervalRef.current);
             }
@@ -88,6 +66,7 @@ const HomeScreen = () => {
     };
 
     return (
+        <div style={styles.parentContainer}>
         <div style={styles.container}>
             {/* Header */}
             <Header />
@@ -128,20 +107,26 @@ const HomeScreen = () => {
             {/* Sign in button */}
             <Button text="Sign in with Email" onClick={handleSignInWithEmail} />
         </div>
+        </div>
     );
 };
 
 const styles = {
+    parentContainer: {
+      display: "flex",
+      justifyContent: "center", /* This centers the child horizontally */
+    },
     container: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         minHeight: '100vh',
-        backgroundColor: '#f0f2f5',
-        minWidth: '360px',
+        backgroundColor: '#fff',
         boxSizing: 'border-box',
         maxWidth: '360px',
-        
+        marginLeft:'35px',
+        marginRight:'35px',
+        width:'100%',
     },
     header: {
         width: '100%',
@@ -168,7 +153,7 @@ const styles = {
     gridSection: {
         display: 'flex',
         justifyContent: 'center',
-        width: '90%',
+        width: '100%',
         flexShrink: 1,
         marginBottom: '30px',
     },
@@ -176,12 +161,11 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         gap: '10px',
-        backgroundColor: '#e0e0e0',
-        borderRadius: '35px',
+        backgroundColor: '#f0f2f5',
+        borderRadius: '30px',
         padding: '15px',
-        boxShadow: '0 5px 15px rgba(0, 0, 0, 0.05)',
-        maxWidth: '300px',
-        width: '80%',
+       
+        
     },
     gridRow: {
         display: 'flex',
@@ -211,9 +195,9 @@ const styles = {
         flexShrink: 1,
     },
     mainText: {
-        fontSize: '24px',
+        fontSize: '32px',
         fontWeight: '600',
-        lineHeight: '1.3',
+        lineHeight: '1.2',
         color: '#333',
     },
     buttonContainer: {

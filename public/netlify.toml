@@ -1,9 +1,3 @@
-[build]
-  # The directory where the built application files are located
-  publish = "build"
-
-  # The command that Netlify will run to build your site
-  command = "npm run build"
 
 [[redirects]]
   # This is crucial for single-page applications (SPAs) like React.

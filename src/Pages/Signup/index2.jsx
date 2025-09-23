@@ -4,6 +4,7 @@ import Header from '../../Components/Header';
 import Button2 from '../../Components/Button 2';
 import { supabase } from '../../supabaseClient';
 import { useLocation } from 'react-router-dom';
+import Button4 from '../../Components/Button4';
 
 const Register = () => {
    const location = useLocation();
@@ -44,6 +45,7 @@ const Register = () => {
               id: user.id,
               email: user.email,
               role: user.user_metadata.role, // Access the role from user_metadata
+              remaining_minutes: 50
             },
           ]);
 
@@ -58,12 +60,13 @@ const Register = () => {
   };
 
   return (
+    <div style={styles.parentContainer}>
     <div style={styles.container}>
       {/* Header */}
       <Header />
 
       {/* Grid Section */}
-      <h1 style={{ margin: '0px', color: '#e14e97', textAlign: 'left' }}>Sign Up to start talking right now...</h1>
+      <h1 style={{ margin: '0px', color: '#e14e97', textAlign: 'left',fontSize:'32px', lineHeight:'1.2', }}>Sign Up to start talking right now...</h1>
 
       {/* Inputs connected to state */}
       <div style={{ width: '100%', maxWidth: '320px', marginBottom: '20px', marginTop: '25%' }}>
@@ -86,7 +89,7 @@ const Register = () => {
           onChange={(e) => setPassword(e.target.value)}
           style={styles.input}
         />
-        <Link to="/login" style={styles.signInLink}>Sign in</Link>
+        
       </div>
 
       {/* Main Text */}
@@ -96,33 +99,49 @@ const Register = () => {
         </p>
       </div>
 
+      <div style={styles.textContainer}>
+                <p style={styles.mainText}>
+                    Lorem ipsum dolor sit amet, consectetur ipsum adipiscing <a style={{textDecoration:'none'}} href='/login'><span style={{color:'#e14e97'}}>Sign In</span></a> here. 
+                </p>
+            </div>
+
       {/* Sign up button calls the correct handler */}
-      <Button2 text="Sign Up" onClick={handleSignup} />
+      <Button4 text="Sign Up" onClick={handleSignup} />
+    </div>
     </div>
   );
 };
 
 const styles = {
+  parentContainer: {
+      display: "flex",
+      justifyContent: "center", /* This centers the child horizontally */
+    },
   container: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     minHeight: '100vh',
-    backgroundColor: '#f0f2f5',
+    backgroundColor: '#fff',
     boxSizing: 'border-box',
     maxWidth: '360px',
-    minWidth: '360px',
+  marginRight:'35px',
+  marginLeft:'35px',
+  width:'100%',
   },
   input: {
     width: '100%',
     border: 'none',
     borderBottom: '1px solid #ccc',
-    padding: '10px 0',
+    padding: '10px 0px',
     background: 'transparent',
-    fontSize: '18px',
-    color: '#333',
+    fontSize: '32px',
+    lineHeight: '1.2',
+    color: '#000000',
     outline: 'none',
-  },
+    fontWeight: "normal",
+    fontFamily: "'Funnel Display', sans-serif",  // 👈 Added
+},
   signInLink: {
     display: 'block',
     marginTop: '10px',
@@ -133,7 +152,7 @@ const styles = {
   },
   textContainer: {
     textAlign: 'center',
-    marginBottom: '30px',
+    
     maxWidth: '320px',
     flexShrink: 1,
   },

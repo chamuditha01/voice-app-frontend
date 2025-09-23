@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Header from '../../Components/Header';
 import Button2 from '../../Components/Button 2';
 import { supabase } from '../../supabaseClient';
+import Button4 from '../../Components/Button4';
 
 const LoginScreen = ({ role }) => {
     const navigate = useNavigate();
@@ -82,12 +83,13 @@ const LoginScreen = ({ role }) => {
     };
 
     return (
+        <div style={styles.parentContainer}>
         <div style={styles.container}>
             {/* Header */}
             <Header />
 
             {/* Grid Section */}
-            <h1 style={{ margin: '0px', color: '#e14e97', textAlign: 'left' }}>Sign In to start talking right now...</h1>
+            <h1 style={{ margin: '0px', color: '#e14e97', textAlign: 'left',fontSize:'32px',fontWeight:'bold', lineHeight:'1.2' }}>Sign In to start talking right now...</h1>
 
             {/* Inputs connected to state */}
             <div style={{ width: '100%', maxWidth: '320px', marginBottom: '20px', marginTop: '25%' }}>
@@ -110,7 +112,7 @@ const LoginScreen = ({ role }) => {
                     onChange={(e) => setPassword(e.target.value)}
                     style={styles.input}
                 />
-                <Link to="/signup1" style={styles.signInLink}>Sign Up</Link>
+                
             </div>
 
             {/* Main Text */}
@@ -119,34 +121,48 @@ const LoginScreen = ({ role }) => {
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                 </p>
             </div>
+            <div style={styles.textContainer}>
+                <p style={styles.mainText}>
+                    Lorem ipsum dolor sit amet, consectetur ipsum adipiscing <a style={{textDecoration:'none'}} href='/signup1'><span style={{color:'#e14e97'}}>Sign Up</span></a> here. 
+                </p>
+            </div>
+
 
             {/* Sign up button calls the correct handler */}
-            <Button2 text="Sign In" onClick={handleLogin} />
+            <Button4 text="Sign In" onClick={handleLogin} />
+        </div>
         </div>
     );
 };
 
 const styles = {
+    parentContainer: {
+      display: "flex",
+      justifyContent: "center", /* This centers the child horizontally */
+    },
     container: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         minHeight: '100vh',
-        backgroundColor: '#f0f2f5',
+        backgroundColor: '#ffffffff',
         boxSizing: 'border-box',
         maxWidth: '360px',
-        minWidth: '360px',
+        marginLeft:'35px',
+        marginRight:'35px',
+        width:'100%',
     },
     input: {
     width: '100%',
     border: 'none',
     borderBottom: '1px solid #ccc',
-    padding: '10px 0',
+    padding: '10px 0px',
     background: 'transparent',
-    fontSize: '18px',
+    fontSize: '32px',
+    lineHeight: '1.2',
     color: '#000000',
     outline: 'none',
-    fontWeight: "600",
+    fontWeight: "normal",
     fontFamily: "'Funnel Display', sans-serif",  // 👈 Added
 },
 
@@ -160,7 +176,7 @@ const styles = {
     },
     textContainer: {
         textAlign: 'left',
-        marginBottom: '20px',
+        
         maxWidth: '320px',
         flexShrink: 1,
     },

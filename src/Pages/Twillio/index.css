@@ -1,9 +1,6 @@
 /* General body and container styling */
 body {
-    background-color: #f0f2f5;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background-color: #fff;
    
     margin: 0;
 }

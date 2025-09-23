@@ -17,18 +17,25 @@ const handleSpeakersignup = () => {
 };
 
   return (
+    <div style={styles.parentContainer}>
     <div style={styles.container}>
       {/* Header */}
       <Header/>
 
       {/* Grid Section */}
-      <h1 style={{margin:'0px',color:'#e94e9f'}}>Select who your role- Speaker or Learner...</h1>
-<div style={{marginTop:'30%',marginBottom:'30%',width:'100%',gap:"30px"}}>
-<Button2 text="Learner" onClick={handleLearnersignup} />
-
-<div style={{height:'30px'}}></div>
-
-<Button2 text="Speaker" onClick={handleSpeakersignup} />
+      <h1 style={{margin:'0px',color:'#e94e9f',fontSize:'32px', lineHeight:"1.2"}}>Select your role, Speaker or Learner...</h1>
+<div style={{
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  flex: 1, // This makes the div fill the available space
+  width: '100%',
+  gap: '15px',
+  margin: 'auto 0', // This helps center it vertically within its parent
+}}>
+  <Button2 text="Learner" onClick={handleLearnersignup} />
+  <Button2 text="Speaker" onClick={handleSpeakersignup} />
 </div>
       {/* Main Text */}
       <div style={styles.textContainer}>
@@ -45,19 +52,26 @@ commodo consequat.
       {/* Sign in button */}
       
     </div>
+    </div>
   );
 };
 
 const styles = {
+  parentContainer: {
+      display: "flex",
+      justifyContent: "center", /* This centers the child horizontally */
+    },
   container: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     minHeight: '100vh',
-    backgroundColor: '#f0f2f5', // Matches home screen background
+    backgroundColor: '#fff', // Matches home screen background
     boxSizing: 'border-box',
     maxWidth: '360px',
-    minWidth: '360px',
+    marginRight:'35px',
+    marginLeft:'35px',
+    width:'100%',
   },
   header: {
     width: '100%',

@@ -15,8 +15,8 @@ const ButtonContainer = styled.div`
 const StyledButton = styled.button`
   width: 100%;
   padding: 20px 20px;
-  background-color: #f9e7f3;
-  color: #e14e97;
+  background-color: #e14e97;
+  color: white;
   font-size: 20px;
   font-weight: normal;
   border: none;
@@ -26,17 +26,17 @@ const StyledButton = styled.button`
   transition: background-color 0.2s ease-in-out;
   text-transform: capitalize;
   font-family: 'Funnel Display', sans-serif;
-  
+
   &:hover {
-    background-color: #f9e7f3;
+    background-color: #e14e97;
   }
 
   &:active {
-    background-color: #f9e7f3;
+    background-color: #e14e97;
   }
 `;
 
-const Button3 = ({ text, onClick }) => {
+const Button4 = ({ text, onClick }) => {
   const formattedText = text ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase() : '';
 
   return (
@@ -48,4 +48,4 @@ const Button3 = ({ text, onClick }) => {
   );
 };
 
-export default Button3;
+export default Button4;

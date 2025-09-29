@@ -83,6 +83,13 @@ const Header = ({ showCloseButton, onClose }) => {
   };
 
   const handleMenuClick = () => {
+    const userEmail = localStorage.getItem('userEmail');
+    const userRole = localStorage.getItem('userRole');
+
+    if (!userEmail || !userRole) {
+      navigate('/login');
+      return;
+    }
     navigate('/menu');
   };
 

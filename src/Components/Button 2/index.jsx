@@ -11,7 +11,7 @@ const StyledButton = styled.button`
   border: none;
   border-radius: 50px; /* Adjust to match the button's roundness */
   cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Adds a subtle shadow */
+  
   transition: background-color 0.2s ease-in-out;
   text-transform: capitalize;
   font-family: 'Funnel Display', sans-serif;

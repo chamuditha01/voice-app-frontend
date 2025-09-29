@@ -77,7 +77,7 @@ button {
 
 button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+   /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);*/
 }
 
 .call-button {
@@ -126,4 +126,62 @@ button:disabled {
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
+}
+
+.fixedButtonWrapper {
+    position: fixed;
+    bottom: 50px;
+    width: 80%;
+    max-width: 360px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+
+.fixedButtonWrapper2 {
+    position: fixed;
+    bottom: 135px;
+    width: 80%;
+    max-width: 360px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+
+.custom-container {
+    margin-top: 5%;
+    text-align: left;
+    background-color: #f9e7f3;
+    padding: 20px;
+    border-radius: 30px;
+}
+
+.about-style {
+    margin-top: 30%;
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+.mic-flex-center {
+    cursor: pointer;
+    margin-top: 90%;
+    margin-bottom: 10%;
+    display: flex;
+    justify-content: center;
+}
+
+@media (min-width: 769px) { 
+    .fixedButtonWrapper {
+        bottom: 10px;
+    }
+    .fixedButtonWrapper2 {
+        bottom: 95px;
+    }
+    
+    .about-style {
+        margin-top: 10%;
+    }
+    .mic-flex-center{
+        margin-top: 50%;
+    }
 }

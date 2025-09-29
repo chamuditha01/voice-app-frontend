@@ -1,0 +1,79 @@
+.parentContainer {
+    display: flex;
+    justify-content: center; /* This centers the child horizontally */
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #fff;
+    box-sizing: border-box;
+    max-width: 360px;
+    margin-right: 35px;
+    margin-left: 35px;
+    width: 100%;
+}
+
+.input {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0px;
+    background: transparent;
+    font-size: 32px;
+    line-height: 1.2;
+    color: #000000;
+    outline: none;
+    font-weight: normal;
+    font-family: 'Funnel Display', sans-serif;
+}
+
+.signInLink {
+    display: block;
+    margin-top: 10px;
+    text-align: left;
+    color: #000;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.textContainer {
+    text-align: center;
+    max-width: 320px;
+    flex-shrink: 1;
+}
+
+.mainText {
+    font-size: 12px;
+    text-align: left;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #333;
+}
+
+
+.passwordwrapper {
+    width: 100%;
+    max-width: 320px;
+    margin-bottom: 15%;
+}
+
+.customInputWrapper {
+    width: 100%;
+    max-width: 320px;
+    margin-bottom: 20px;
+    margin-top: 25%;
+}
+
+
+@media (min-width: 769px) { 
+    .passwordwrapper {
+        margin-bottom: 0;
+    }
+    .customInputWrapper {
+    margin-top: 15%;
+}
+
+}

@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
+import showPasswordIcon from './show.png';
+import hidePasswordIcon from './hide.png';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e) => {
   e.preventDefault();
@@ -52,14 +55,22 @@ function Login() {
           required
           style={styles.input}
         />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          required
-          style={styles.input}
-        />
+        <div style={styles.passwordContainer}>
+  <input
+    type={showPassword ? 'text' : 'password'}
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    placeholder="Password"
+    required
+    style={styles.input}
+  />
+  <img
+    src={showPassword ? hidePasswordIcon : showPasswordIcon}
+    onClick={() => setShowPassword(!showPassword)}
+    style={styles.passwordToggleIcon}
+    alt="Toggle Password Visibility"
+  />
+</div>
         <button type="submit" style={styles.button}>Log In</button>
         <div style={styles.linkContainer}>
           <p style={{ margin: 0 }}>Don't have an account?</p>
@@ -122,6 +133,19 @@ const styles = {
     textDecoration: 'none',
     fontWeight: 'bold',
     marginLeft: '5px',
+  },
+  passwordContainer: {
+    position: 'relative', // Enables positioning for the icon
+    width: '100%',
+  },
+  passwordToggleIcon: {
+    position: 'absolute',
+    right: '15px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    cursor: 'pointer',
+    width: '20px', // Adjust size as needed
+    height: '20px',
   },
 };
 

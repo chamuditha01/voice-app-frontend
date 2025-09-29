@@ -41,6 +41,104 @@ const CallComponent = ({ email, role }) => {
   const [location, setLocation] = useState(""); // Current user's location
   const [imageUrl, setImageUrl] = useState(""); // Current user's imageUrl
   const [myimgUrl, setmyImgUrl] = useState(null);
+  const [remoteStream, setRemoteStream] = useState(null);
+  const [isMySpeaking, setIsMySpeaking] = useState(false); 
+
+  
+
+const audioContextRef = useRef(null);
+const analyserRef = useRef(null);
+const animationFrameIdRef = useRef(null);
+const [isSpeaking, setIsSpeaking] = useState(false);
+
+useEffect(() => {
+    if (remoteStream) {
+        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+        analyserRef.current = audioContextRef.current.createAnalyser();
+        analyserRef.current.fftSize = 256;
+
+        const source = audioContextRef.current.createMediaStreamSource(remoteStream);
+        source.connect(analyserRef.current);
+
+        const bufferLength = analyserRef.current.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        const analyzeAudio = () => {
+            analyserRef.current.getByteFrequencyData(dataArray);
+
+            // Check the average volume level
+            const sum = dataArray.reduce((acc, val) => acc + val, 0);
+            const average = sum / bufferLength;
+            
+            // Set a threshold to detect if the user is speaking
+            const speakingThreshold = 20; // Adjust this value as needed
+            setIsSpeaking(average > speakingThreshold);
+
+            animationFrameIdRef.current = requestAnimationFrame(analyzeAudio);
+        };
+
+        analyzeAudio();
+    }
+
+    return () => {
+        if (animationFrameIdRef.current) {
+            cancelAnimationFrame(animationFrameIdRef.current);
+        }
+        if (audioContextRef.current) {
+            audioContextRef.current.close();
+        }
+    };
+}, [remoteStream]);
+
+
+// Place this new useEffect after your existing useEffect blocks
+
+const localAudioContextRef = useRef(null);
+const localAnalyserRef = useRef(null);
+const localAnimationFrameIdRef = useRef(null);
+
+useEffect(() => {
+    const localStream = localStreamRef.current;
+    if (localStream) {
+        // Initialize local audio analysis components
+        localAudioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+        localAnalyserRef.current = localAudioContextRef.current.createAnalyser();
+        localAnalyserRef.current.fftSize = 256;
+
+        const source = localAudioContextRef.current.createMediaStreamSource(localStream);
+        source.connect(localAnalyserRef.current);
+        // Do NOT connect to destination to avoid self-hearing in some browsers, 
+        // as the stream is already handled by RTCPeerConnection.
+
+        const bufferLength = localAnalyserRef.current.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        const analyzeLocalAudio = () => {
+            localAnalyserRef.current.getByteFrequencyData(dataArray);
+
+            const sum = dataArray.reduce((acc, val) => acc + val, 0);
+            const average = sum / bufferLength;
+            
+            // Adjust this threshold if the detection is too sensitive or not sensitive enough
+            const speakingThreshold = 30; 
+            setIsMySpeaking(average > speakingThreshold);
+
+            localAnimationFrameIdRef.current = requestAnimationFrame(analyzeLocalAudio);
+        };
+
+        analyzeLocalAudio();
+    }
+
+    return () => {
+        if (localAnimationFrameIdRef.current) {
+            cancelAnimationFrame(localAnimationFrameIdRef.current);
+        }
+        if (localAudioContextRef.current) {
+            localAudioContextRef.current.close();
+        }
+    };
+}, [localStreamRef.current]); // Dependency on localStreamRef.current ensures it runs when the stream is acquired
+  
 
   useEffect(() => {
     // Fetch data from local storage
@@ -116,12 +214,14 @@ const CallComponent = ({ email, role }) => {
       });
 
       peerConnectionRef.current.ontrack = (event) => {
-        const [remoteStream] = event.streams;
-        const remoteAudio = new Audio();
-        remoteAudio.srcObject = remoteStream;
-        remoteAudio.play();
-        setStatus("In a call");
-      };
+    const [remoteStream] = event.streams;
+    const remoteAudio = new Audio();
+    remoteAudio.srcObject = remoteStream;
+    remoteAudio.play();
+    setRemoteStream(remoteStream); // <-- Store the stream here
+    setStatus("In a call");
+};
+
 
       peerConnectionRef.current.onicecandidate = (event) => {
         if (event.candidate) {
@@ -361,32 +461,43 @@ const CallComponent = ({ email, role }) => {
   };
 
   const handleCallSpecificUser = (
+  targetId,
+  opponentEmail,
+  opponentName,
+  opponentAge,
+  opponentBio,
+  opponentImageUrl,
+  opponentLocation
+) => {
+  setSelectedUserShow(false);
+  
+  // This is the crucial fix: Set the callDetails state immediately.
+  setCallDetails({
     targetId,
     opponentEmail,
     opponentName,
     opponentAge,
     opponentBio,
     opponentImageUrl,
-    opponentLocation
-  ) => {
-    setSelectedUserShow(false);
-    if (wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(
-        JSON.stringify({
-          type: "call_request",
-          targetId: targetId,
-          opponentEmail: opponentEmail,
-          opponentName: opponentName,
-          opponentAge: opponentAge,
-          opponentBio: opponentBio,
-          opponentImageUrl: opponentImageUrl,
-          opponentLocation: opponentLocation,
-        })
-      );
+    opponentLocation,
+  });
 
-      setStatus("Requesting Call...");
-    }
-  };
+  if (wsRef.current.readyState === WebSocket.OPEN) {
+    wsRef.current.send(
+      JSON.stringify({
+        type: "call_request",
+        targetId: targetId,
+        opponentEmail: opponentEmail,
+        opponentName: opponentName,
+        opponentAge: opponentAge,
+        opponentBio: opponentBio,
+        opponentImageUrl: opponentImageUrl,
+        opponentLocation: opponentLocation,
+      })
+    );
+    setStatus("Requesting Call...");
+  }
+};
 
   const handleAcceptCall = async () => {
     if (wsRef.current.readyState === WebSocket.OPEN) {
@@ -455,7 +566,9 @@ const CallComponent = ({ email, role }) => {
     setShowRatingForm(false);
   };
 
-  const endCall = (notifyServer = true, showForm = false) => {
+
+  const cancelCall = (notifyServer = true, showForm = false) => {
+    console.log('Call cancelled')
   // Check if the peer connection is still active and gracefully close it
   if (
     peerConnectionRef.current &&
@@ -470,6 +583,18 @@ const CallComponent = ({ email, role }) => {
     localStreamRef.current = null;
   }
 
+  console.log(role);
+    // Send message to the backend saying the call was canceled by the learner
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN ) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: "call_canceled",
+          targetId: callDetails.targetId,
+        })
+      );
+      console.log("Sent call_canceled message to the server.");
+    }
+
   // This block runs only if the call was in progress and we need to notify the server
   if (status === "In a call" && notifyServer) {
     const endTime = new Date().toISOString();
@@ -483,15 +608,7 @@ const CallComponent = ({ email, role }) => {
       targetId, // Important to get the opponent's ID
     } = callDetails;
 
-    // Send message to the backend saying the call was canceled by the learner
-    if (role === "learner" && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(
-        JSON.stringify({
-          type: "call_canceled",
-          targetId: targetId,
-        })
-      );
-    }
+    
 
     // New logic to update minutes_remaining in Supabase
     if (role === "learner") {
@@ -561,6 +678,108 @@ const CallComponent = ({ email, role }) => {
     setShowRatingForm(true);
   }
 };
+
+  const endCall = (notifyServer = true, showForm = false) => {
+    console.log('Call cancelled')
+  // Check if the peer connection is still active and gracefully close it
+  if (
+    peerConnectionRef.current &&
+    peerConnectionRef.current.signalingState !== "closed"
+  ) {
+    peerConnectionRef.current.close();
+    peerConnectionRef.current = null;
+  }
+  // Stop the local media stream
+  if (localStreamRef.current) {
+    localStreamRef.current.getTracks().forEach((track) => track.stop());
+    localStreamRef.current = null;
+  }
+
+  
+  // This block runs only if the call was in progress and we need to notify the server
+  if (status === "In a call" && notifyServer) {
+    const endTime = new Date().toISOString();
+    const {
+      opponentEmail,
+      opponentName,
+      opponentAge,
+      opponentBio,
+      opponentImageUrl,
+      opponentLocation,
+      targetId, // Important to get the opponent's ID
+    } = callDetails;
+
+    
+
+    // New logic to update minutes_remaining in Supabase
+    if (role === "learner") {
+      const callDurationInMinutes = Math.floor(callTime / 60);
+
+      const updateMinutes = async () => {
+        // First, get the current minutes_remaining
+        const { data, error } = await supabase
+          .from("users")
+          .select("minutes_remaining")
+          .eq("email", email)
+          .single();
+
+        if (error) {
+          console.error("Error fetching minutes remaining:", error.message);
+          return;
+        }
+
+        if (data) {
+          const newMinutesRemaining = Math.max(
+            0,
+            data.minutes_remaining - callDurationInMinutes
+          );
+
+          // Then, update the minutes_remaining
+          const { error: updateError } = await supabase
+            .from("users")
+            .update({ minutes_remaining: newMinutesRemaining })
+            .eq("email", email);
+
+          if (updateError) {
+            console.error(
+              "Error updating minutes remaining:",
+              updateError.message
+            );
+          } else {
+            console.log(
+              `Minutes remaining updated to: ${newMinutesRemaining}`
+            );
+          }
+        }
+      };
+      updateMinutes();
+    }
+
+    // Prepare and send call data to the server
+    const callData = {
+      learner_email: role === "learner" ? email : opponentEmail,
+      speaker_email: role === "speaker" ? email : opponentEmail,
+      opponentName: opponentName,
+      opponentAge: opponentAge,
+      opponentBio: opponentBio,
+      opponentImageUrl: opponentImageUrl,
+      opponentLocation: opponentLocation,
+      duration: callTime,
+      startTime,
+      endTime,
+    };
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: "call_ended", ...callData }));
+    }
+  }
+
+  // Reset the local state
+  setStatus("Disconnected");
+  if (showForm) {
+    setShowRatingForm(true);
+  }
+};
+
 
   const handleRatingSubmit = (e) => {
     e.preventDefault();
@@ -669,7 +888,7 @@ const CallComponent = ({ email, role }) => {
       fontWeight: "bold",
       color: "#333",
       marginBottom: "0px",
-
+      paddingLeft: "5%",
       textAlign: "left",
     },
     location: {
@@ -679,6 +898,7 @@ const CallComponent = ({ email, role }) => {
       marginBottom: "5px",
       marginTop: "0px",
       textAlign: "left",
+      paddingLeft: "5%",
     },
     country: {
       fontSize: "18px",
@@ -709,7 +929,7 @@ const CallComponent = ({ email, role }) => {
     border: "none",
     borderRadius: "50px",
     cursor: "pointer",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    
     transition: "background-color 0.2s ease-in-out",
     marginTop: "20%",
     textTransform: "capitalize",
@@ -726,7 +946,7 @@ const CallComponent = ({ email, role }) => {
     border: "none",
     borderRadius: "50px",
     cursor: "pointer",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+   
     transition: "background-color 0.2s ease-in-out",
     textTransform: "capitalize",
     fontFamily: "'Funnel Display', sans-serif",
@@ -741,7 +961,7 @@ const CallComponent = ({ email, role }) => {
     border: "none",
     borderRadius: "50px",
     cursor: "pointer",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    
     transition: "background-color 0.2s ease-in-out",
     textTransform: "capitalize",
     fontFamily: "'Funnel Display', sans-serif",
@@ -804,9 +1024,6 @@ const CallComponent = ({ email, role }) => {
   };
 
   const canvasRef = useRef(null);
-  const audioContextRef = useRef(null);
-  const analyserRef = useRef(null);
-  const animationFrameIdRef = useRef(null);
 
   const drawFrequencyMap = () => {
     const canvas = canvasRef.current;
@@ -863,16 +1080,7 @@ const CallComponent = ({ email, role }) => {
       <Header />
       {selectedusershow && (
         <div style={styles.profileDetailsContainer}>
-          <div
-            style={{
-              marginTop: "5%",
-              textAlign: "left",
-              backgroundColor: "#f9e7f3",
-              padding: "20px",
-              borderRadius: "30px",
-             
-            }}
-          >
+          <div className="custom-container">
             <div
               style={{
                 display: "flex",
@@ -895,8 +1103,8 @@ const CallComponent = ({ email, role }) => {
               <div style={{ textAlign: "center" }}>
                 <img
                   src={
-                    callDetails.opponentImageUrl ||
-                    "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
+                    selectedUser.imageUrl ||
+                    "https://img.freepik.com/premium-vector/man-avatar-profile-picture-isolated-background-avatar-profile-picture-man_1293239-4855.jpg"
                   }
                   width={"50px"}
                   height={"50px"}
@@ -911,11 +1119,7 @@ const CallComponent = ({ email, role }) => {
             </div>
 
             <h4
-              style={{
-                marginTop: "30%",
-                fontSize: "20px",
-                marginBottom: "5px",
-              }}
+              className="about-style"
             >
               About
             </h4>
@@ -959,16 +1163,7 @@ const CallComponent = ({ email, role }) => {
             </div>
           </div>
           <div style={{display:'flex',flexDirection:'column',gap:'15px'}}>
-          <div
-            style={{
-              position: "fixed",
-              bottom: "135px",
-              width: "80%",
-              maxWidth: "360px",
-              left: "50%",
-              transform: "translateX(-50%)",
-              zIndex: 1000,
-            }}
+          <div className="fixedButtonWrapper2"
           >
             <button
               style={buttonStyle1}
@@ -978,15 +1173,7 @@ const CallComponent = ({ email, role }) => {
             </button>
           </div>
           <div
-            style={{
-              position: "fixed",
-              bottom: "50px",
-              width: "80%",
-              maxWidth: "360px",
-              left: "50%",
-              transform: "translateX(-50%)",
-              zIndex: 1000,
-            }}
+            className="fixedButtonWrapper"
           >
             <button
               style={buttonStyle}
@@ -1058,7 +1245,7 @@ const CallComponent = ({ email, role }) => {
                 onClick={() => handleImageClick(user)} // This is the new click handler
                 src={
                   user.imageUrl ||
-                  "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
+                  "https://img.freepik.com/premium-vector/man-avatar-profile-picture-isolated-background-avatar-profile-picture-man_1293239-4855.jpg"
                 }
                 alt={user.name || user.email}
                 className="profile-image"
@@ -1096,15 +1283,7 @@ const CallComponent = ({ email, role }) => {
               </div>
               {role === "learner" && (
                 <div
-                  style={{
-                    position: "fixed",
-                    bottom: "50px",
-                    width: "80%",
-                    maxWidth: "360px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    zIndex: 1000,
-                  }}
+                  className="fixedButtonWrapper"
                 >
                   <button
                     style={buttonStyle}
@@ -1120,7 +1299,7 @@ const CallComponent = ({ email, role }) => {
                       )
                     }
                   >
-                    Talk to{" "}
+                    Talk to {" "}
                     {availableUsers[0].name?.split(" ")[0] ||
                       availableUsers[0].email.split("@")[0]}
                   </button>
@@ -1155,7 +1334,7 @@ const CallComponent = ({ email, role }) => {
                   <img
                     src={
                       callDetails.opponentImageUrl ||
-                      "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
+                      "https://img.freepik.com/premium-vector/man-avatar-profile-picture-isolated-background-avatar-profile-picture-man_1293239-4855.jpg"
                     }
                     width={"50px"}
                     height={"50px"}
@@ -1220,15 +1399,7 @@ const CallComponent = ({ email, role }) => {
               ></textarea>
               <br></br>
               <div
-                style={{
-                  position: "fixed",
-                  bottom: "135px",
-                  width: "80%",
-                  maxWidth: "360px",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  zIndex: 1000,
-                }}
+                className="fixedButtonWrapper2"
               >
                 <button
                   type="submit"
@@ -1242,15 +1413,7 @@ const CallComponent = ({ email, role }) => {
                 </button>
               </div>
               <div
-                style={{
-                  position: "fixed",
-                  bottom: "50px",
-                  width: "80%",
-                  maxWidth: "360px",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  zIndex: 1000,
-                }}
+               className="fixedButtonWrapper"
               >
                 <button
                   style={{ ...buttonStyle, marginTop: "10px" }}
@@ -1290,7 +1453,7 @@ const CallComponent = ({ email, role }) => {
                       <img
                         src={
                           callDetails.opponentImageUrl ||
-                          "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
+                          "https://img.freepik.com/premium-vector/man-avatar-profile-picture-isolated-background-avatar-profile-picture-man_1293239-4855.jpg"
                         }
                         width={"50px"}
                         height={"50px"}
@@ -1318,12 +1481,23 @@ const CallComponent = ({ email, role }) => {
 }}>   
 <div  style={{ cursor: "pointer" }}>
   <img
-                      src={imgsound}
-                      width={"50px"}
-                      height={"50px"}
-                      style={{ borderRadius: "10px", objectFit: "cover" }}
-                      alt="freq"
-                    />
+        src={
+            // Check if MUTED: show static icon
+            isMuted 
+                ? imgsound 
+                : 
+            // Check if EITHER user is speaking: show frequency animation
+            (isMySpeaking || isSpeaking) 
+                ? require('./freq.webp') 
+                : 
+            // Otherwise: show static icon
+            imgsound
+        }
+        width={"50px"}
+        height={"50px"}
+        style={{ borderRadius: "10px", objectFit: "cover" }}
+        alt="freq"
+    />
                     </div>
                     <h1 style={{ margin: "0px", color: "#000000", fontSize:'48px'}}>
                       {formatTime(callTime)}
@@ -1345,15 +1519,7 @@ const CallComponent = ({ email, role }) => {
                     </div>
                   </div>
                   <div
-                    style={{
-                      position: "fixed",
-                      bottom: "50px",
-                      width: "80%",
-                      maxWidth: "360px",
-                      left: "50%",
-                      transform: "translateX(-50%)",
-                      zIndex: 1000,
-                    }}
+                    className="fixedButtonWrapper"
                   >
                     <button
                       onClick={() => endCall(true, true)}
@@ -1395,7 +1561,7 @@ const CallComponent = ({ email, role }) => {
                       <img
                         src={
                           callDetails.opponentImageUrl ||
-                          "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
+                          "https://img.freepik.com/premium-vector/man-avatar-profile-picture-isolated-background-avatar-profile-picture-man_1293239-4855.jpg"
                         }
                         width={"50px"}
                         height={"50px"}
@@ -1410,14 +1576,7 @@ const CallComponent = ({ email, role }) => {
                   </div>
                   <div
                     onClick={toggleMute}
-                    style={{
-                      cursor: "pointer",
-                      marginTop: "90%",
-                      marginBottom: "10%",
-                      display: "flex" /* 1. Make the container a flexbox */,
-                      justifyContent:
-                        "center" /* 2. Center its content horizontally */,
-                    }}
+                    className="mic-flex-center"
                   >
                     <img
                       src={isMuted ? imgmute : imgunmute}
@@ -1432,7 +1591,7 @@ const CallComponent = ({ email, role }) => {
                       alt="mic"
                     />
                   </div>
-                  <Button3 text={"Cancel"} onClick={endCall} />
+                  <Button3 text={"Cancel"} onClick={cancelCall} />
                 </div>
               )}
               {status ===

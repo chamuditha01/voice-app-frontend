@@ -47,6 +47,103 @@ const CallComponent = ({ email, role }) => {
   const [myimgUrl, setmyImgUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [canceledMessage, setCanceledMessage] = useState(null);
+    const [remoteStream, setRemoteStream] = useState(null);
+    const [isMySpeaking, setIsMySpeaking] = useState(false); 
+  
+    
+  
+  const audioContextRef = useRef(null);
+  const analyserRef = useRef(null);
+  const animationFrameIdRef = useRef(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  useEffect(() => {
+      if (remoteStream) {
+          audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+          analyserRef.current = audioContextRef.current.createAnalyser();
+          analyserRef.current.fftSize = 256;
+  
+          const source = audioContextRef.current.createMediaStreamSource(remoteStream);
+          source.connect(analyserRef.current);
+  
+          const bufferLength = analyserRef.current.frequencyBinCount;
+          const dataArray = new Uint8Array(bufferLength);
+  
+          const analyzeAudio = () => {
+              analyserRef.current.getByteFrequencyData(dataArray);
+  
+              // Check the average volume level
+              const sum = dataArray.reduce((acc, val) => acc + val, 0);
+              const average = sum / bufferLength;
+              
+              // Set a threshold to detect if the user is speaking
+              const speakingThreshold = 20; // Adjust this value as needed
+              setIsSpeaking(average > speakingThreshold);
+  
+              animationFrameIdRef.current = requestAnimationFrame(analyzeAudio);
+          };
+  
+          analyzeAudio();
+      }
+  
+      return () => {
+          if (animationFrameIdRef.current) {
+              cancelAnimationFrame(animationFrameIdRef.current);
+          }
+          if (audioContextRef.current) {
+              audioContextRef.current.close();
+          }
+      };
+  }, [remoteStream]);
+    
+
+  const localAudioContextRef = useRef(null);
+  const localAnalyserRef = useRef(null);
+  const localAnimationFrameIdRef = useRef(null);
+  
+  useEffect(() => {
+      const localStream = localStreamRef.current;
+      if (localStream) {
+          // Initialize local audio analysis components
+          localAudioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+          localAnalyserRef.current = localAudioContextRef.current.createAnalyser();
+          localAnalyserRef.current.fftSize = 256;
+  
+          const source = localAudioContextRef.current.createMediaStreamSource(localStream);
+          source.connect(localAnalyserRef.current);
+          // Do NOT connect to destination to avoid self-hearing in some browsers, 
+          // as the stream is already handled by RTCPeerConnection.
+  
+          const bufferLength = localAnalyserRef.current.frequencyBinCount;
+          const dataArray = new Uint8Array(bufferLength);
+  
+          const analyzeLocalAudio = () => {
+              localAnalyserRef.current.getByteFrequencyData(dataArray);
+  
+              const sum = dataArray.reduce((acc, val) => acc + val, 0);
+              const average = sum / bufferLength;
+              
+              // Adjust this threshold if the detection is too sensitive or not sensitive enough
+              const speakingThreshold = 30; 
+              setIsMySpeaking(average > speakingThreshold);
+  
+              localAnimationFrameIdRef.current = requestAnimationFrame(analyzeLocalAudio);
+          };
+  
+          analyzeLocalAudio();
+      }
+  
+      return () => {
+          if (localAnimationFrameIdRef.current) {
+              cancelAnimationFrame(localAnimationFrameIdRef.current);
+          }
+          if (localAudioContextRef.current) {
+              localAudioContextRef.current.close();
+          }
+      };
+  }, [localStreamRef.current]); // Dependency on localStreamRef.current ensures it runs when the stream is acquired
+    
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -166,13 +263,14 @@ useEffect(() => {
         peerConnectionRef.current.addTrack(track, stream);
       });
 
-      peerConnectionRef.current.ontrack = (event) => {
-        const [remoteStream] = event.streams;
-        const remoteAudio = new Audio();
-        remoteAudio.srcObject = remoteStream;
-        remoteAudio.play();
-        setStatus("In a call");
-      };
+       peerConnectionRef.current.ontrack = (event) => {
+    const [remoteStream] = event.streams;
+    const remoteAudio = new Audio();
+    remoteAudio.srcObject = remoteStream;
+    remoteAudio.play();
+    setRemoteStream(remoteStream); // <-- Store the stream here
+    setStatus("In a call");
+};
 
       peerConnectionRef.current.onicecandidate = (event) => {
         if (event.candidate) {
@@ -268,7 +366,10 @@ useEffect(() => {
         const { callId, senderId, opponentEmail, opponentName, opponentAge, opponentBio, opponentImageUrl, opponentLocation } = data;
         setCallDetails({ callId, opponentEmail, opponentName, opponentAge, opponentBio, opponentImageUrl, opponentLocation, targetId: senderId });
         startCall(senderId, callId, opponentEmail, opponentName, opponentAge, opponentBio, opponentImageUrl, opponentLocation, true);
-      }
+      }else if (data.type === "call_canceled_notification") {
+    setStatus("Canceled");
+    setCanceledMessage("The learner canceled the call.");
+}
       else if (data.type === "call_rejected") {
    
     
@@ -404,6 +505,14 @@ useEffect(() => {
           })
         );
       }
+       peerConnectionRef.current.ontrack = (event) => {
+    const [remoteStream] = event.streams;
+    const remoteAudio = new Audio();
+    remoteAudio.srcObject = remoteStream;
+    remoteAudio.play();
+    setRemoteStream(remoteStream); // <-- Store the stream here
+    setStatus("In a call");
+};
       setCallRequest(null);
     }
   };
@@ -524,7 +633,7 @@ useEffect(() => {
     border: "none",
     borderRadius: "50px",
     cursor: "pointer",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+   
     transition: "background-color 0.2s ease-in-out",
     marginTop: "10%",
     textTransform:"capitalize",
@@ -626,7 +735,7 @@ useEffect(() => {
     border: "none",
     borderRadius: "50px",
     cursor: "pointer",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    
     transition: "background-color 0.2s ease-in-out",
     marginTop: "20%",
     textTransform:"capitalize",
@@ -643,7 +752,7 @@ useEffect(() => {
     border: "none",
     borderRadius: "50px",
     cursor: "pointer",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    
     transition: "background-color 0.2s ease-in-out",
     textTransform:"capitalize",
     fontFamily: "'Funnel Display', sans-serif",  
@@ -694,6 +803,24 @@ console.log("Going offline...");
     <div style={styles.parentContainer}>
     <div style={styles.outerContainer}>
       <Header />
+      {canceledMessage && (
+  <div >
+    <h1 style={{ margin: "0px", color: "#e14e97", fontSize: '32px', fontWeight: 'bold', lineHeight: '1.2' }}>
+      {canceledMessage}
+    </h1>
+    {/* You may want to add a button to clear the message and reset state */}
+    <div style={{ marginTop: "100%", width: "100%" }}>
+      <Button3
+        text={"OK"}
+        onClick={() => {
+          // This resets all states to the initial disconnected state
+          resetStates1(); 
+          setCanceledMessage(null); 
+        }}
+      />
+    </div>
+  </div>
+)}
 
       {!callRequest &&
   status !== "In a call" &&
@@ -718,7 +845,7 @@ console.log("Going offline...");
                       <img
                         src={
                           myimgUrl ||
-                          "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
+                          "https://img.freepik.com/premium-vector/man-avatar-profile-picture-isolated-background-avatar-profile-picture-man_1293239-4855.jpg"
                         }
                         width={"50px"}
                         height={"50px"}
@@ -766,7 +893,7 @@ console.log("Going offline...");
                   <img
                     src={
                       callDetails.opponentImageUrl ||
-                      "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
+                      "https://img.freepik.com/premium-vector/man-avatar-profile-picture-isolated-background-avatar-profile-picture-man_1293239-4855.jpg"
                     }
                     width={"50px"}
                     height={"50px"}
@@ -830,7 +957,7 @@ console.log("Going offline...");
   }}
 ></textarea>
               <br></br>
-               <div style={{ position: 'fixed', bottom: '135px', width: '80%', maxWidth: '360px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
+               <div className="fixedButtonWrapper2">
  
               <button
                 type="submit"
@@ -845,7 +972,7 @@ console.log("Going offline...");
                 Skip
               </button>
               </div>
-               <div style={{ position: 'fixed', bottom: '50px', width: '80%', maxWidth: '360px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
+               <div className="fixedButtonWrapper">
  
               <button
                 style={{ ...buttonStyle, marginTop: "10px" }}
@@ -877,7 +1004,7 @@ console.log("Going offline...");
                       <img
                         src={
                           callDetails.opponentImageUrl ||
-                          "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
+                          "https://img.freepik.com/premium-vector/man-avatar-profile-picture-isolated-background-avatar-profile-picture-man_1293239-4855.jpg"
                         }
                         width={"50px"}
                         height={"50px"}
@@ -904,13 +1031,24 @@ console.log("Going offline...");
   transform: 'translate(-50%, -50%)',
 }}>   
 <div  style={{ cursor: "pointer" }}>
-  <img
-                      src={imgsound}
-                      width={"50px"}
-                      height={"50px"}
-                      style={{ borderRadius: "10px", objectFit: "cover" }}
-                      alt="freq"
-                    />
+   <img
+        src={
+            // Check if MUTED: show static icon
+            isMuted 
+                ? imgsound 
+                : 
+            // Check if EITHER user is speaking: show frequency animation
+            (isMySpeaking || isSpeaking) 
+                ? require('./freq.webp') 
+                : 
+            // Otherwise: show static icon
+            imgsound
+        }
+        width={"50px"}
+        height={"50px"}
+        style={{ borderRadius: "10px", objectFit: "cover" }}
+        alt="freq"
+    />
                     </div>
                     <h1 style={{ margin: "0px", color: "#000000", fontSize:'48px'}}>
                       {formatTime(callTime)}
@@ -932,7 +1070,7 @@ console.log("Going offline...");
                     </div>
                   </div>
 
-                 <div style={{ position: 'fixed', bottom: '50px', width: '80%', maxWidth: '360px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
+                 <div className="fixedButtonWrapper">
   <button
     onClick={() => endCall(true, true)}
     disabled={status === "Disconnected"}
@@ -953,7 +1091,7 @@ console.log("Going offline...");
                   No speakers are currently available. Please try again later.
                 </p>
               )}
-              {callRequest && (
+             {callRequest && status !== "Canceled" && (
                 <div >
                   <div
                     style={{
@@ -972,7 +1110,7 @@ console.log("Going offline...");
                       <img
                         src={
                           callDetails.opponentImageUrl ||
-                          "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D"
+                          "https://img.freepik.com/premium-vector/man-avatar-profile-picture-isolated-background-avatar-profile-picture-man_1293239-4855.jpg"
                         }
                         width={"50px"}
                         height={"50px"}
@@ -1007,13 +1145,13 @@ console.log("Going offline...");
     ))}
 </div>
                   </div>
-                   <div style={{ position: 'fixed', bottom: '135px', width: '80%', maxWidth: '360px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
+                   <div className="fixedButtonWrapper2">
  
                   <button onClick={handleAcceptCall} style={stylebutton3}>
                     Accept
                   </button>
                   </div>
-                   <div style={{ position: 'fixed', bottom: '50px', width: '80%', maxWidth: '360px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
+                   <div className="fixedButtonWrapper">
  
                   <button onClick={handleRejectCall} style={buttonStyle}>
                     Reject

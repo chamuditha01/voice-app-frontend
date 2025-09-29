@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../Components/Header';
-import Button2 from '../../Components/Button 2';
+import Button2 from '../../Components/Button 2'; // Keeping Button2, though it's not used in the JSX
 import { supabase } from '../../supabaseClient';
 import Button4 from '../../Components/Button4';
+import './index.css';
 
 const UpdateProfile = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const fileInputRef = useRef(null); // 👈 ADDED: Ref for the hidden file input
 
     const [loading, setLoading] = useState(true);
     const [email, setEmail] = useState('');
-    const [name, setName] = useState(''); // New state for name
+    const [name, setName] = useState('');
     const [bio, setBio] = useState('');
     const [age, setAge] = useState('');
     const [avatarUrl, setAvatarUrl] = useState(null);
@@ -21,6 +23,7 @@ const UpdateProfile = () => {
     useEffect(() => {
         const fetchUserData = async () => {
             const userEmail = location.state?.userEmail || 'heshanchamuditha05@gmail.com';
+            console.log("Fetched user email from state:", userEmail);
 
             if (!userEmail) {
                 console.error("No email provided, redirecting to login.");
@@ -33,14 +36,14 @@ const UpdateProfile = () => {
             // Fetch user profile data from your `users` table
             const { data: profileData, error: profileError } = await supabase
                 .from('users')
-                .select('name, bio, age, imageUrl, location') // Select the new 'name' column
+                .select('name, bio, age, imageUrl, location')
                 .eq('email', userEmail)
                 .single();
 
             if (profileError) {
                 console.error("Error fetching user profile:", profileError.message);
             } else {
-                setName(profileData.name || ''); // Set the name state
+                setName(profileData.name || '');
                 setBio(profileData.bio || '');
                 setAge(profileData.age || '');
                 setAvatarUrl(profileData.imageUrl || null);
@@ -52,6 +55,13 @@ const UpdateProfile = () => {
 
         fetchUserData();
     }, [navigate, location.state]);
+
+    // 👈 ADDED: Function to programmatically click the hidden file input
+    const handleAvatarClick = () => {
+        if (fileInputRef.current && !uploading) {
+            fileInputRef.current.click(); 
+        }
+    };
 
     const handleImageUpload = async (event) => {
         try {
@@ -91,9 +101,12 @@ const UpdateProfile = () => {
         e.preventDefault();
         setLoading(true);
 
+        // Ensure age is stored as a number (Supabase may enforce types)
+        const ageValue = age ? parseInt(age, 10) : null;
+
         const { error: profileError } = await supabase
             .from('users')
-            .update({ name, bio, age, imageUrl: avatarUrl, location: userLocation }) // Include 'name' in the update
+            .update({ name, bio, age: ageValue, imageUrl: avatarUrl, location: userLocation })
             .eq('email', email);
 
         if (profileError) {
@@ -108,164 +121,129 @@ const UpdateProfile = () => {
 
     if (loading) {
         return (
-            <div style={styles.parentContainer}>
-            <div style={styles.container}>
-                <Header />
-                <h1 style={{ margin: 'auto', textAlign: 'center', color: '#e94e9f' }}>...</h1>
-            </div>
+            <div className="parentContainer">
+                <div className="container">
+                    <Header />
+                    <h1 style={{ margin: 'auto', textAlign: 'center', color: '#e94e9f' }}>...</h1>
+                </div>
             </div>
         );
     }
 
     return (
-        <div style={styles.parentContainer}>
-        <div style={styles.container}>
-            <Header />
-            <h1 style={{ margin: '0px', color: '#e94e9f', textAlign: 'left',marginBottom:'40px' }}>Edit Profile</h1>
+        <div className="parentContainer">
+            <div className="container">
+                <Header />
+                <h1 
+                    style={{ 
+                        margin: '0px', 
+                        color: '#e94e9f', 
+                        textAlign: 'left',
+                        marginBottom: '40px' 
+                    }}
+                >
+                    Edit Profile
+                </h1>
 
-            <form onSubmit={handleUpdateProfile} style={{ width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={styles.avatarContainer}>
-                    {avatarUrl ? (
-                        <img src={avatarUrl} alt="Avatar" style={styles.avatarImage} draggable="false"/>
-                    ) : (
-                        <div style={styles.noAvatarPlaceholder}>No Image</div>
-                    )}
-                    {/*
-                    <label style={styles.avatarUploadLabel} htmlFor="single">
-                        {uploading ? 'Uploading...' : 'Upload an image'}
-                    </label>*/}
-                    <input
-                        style={{ visibility: 'hidden', position: 'absolute' }}
-                        type="file"
-                        id="single"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        disabled={uploading}
-                    />
-                </div>
+                <form 
+                    onSubmit={handleUpdateProfile} 
+                    style={{ 
+                        width: '100%', 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center' 
+                    }}
+                >
+                    {/* ADDED: onClick handler and pointer style */}
+                    <div 
+                        className="avatarContainer"
+                        onClick={handleAvatarClick} 
+                        style={{ cursor: uploading ? 'default' : 'pointer' }}
+                    >
+                        {avatarUrl ? (
+                            <img src={avatarUrl} alt="Avatar" className="avatarImage" draggable="false"/>
+                        ) : (
+                            // Using a button/label to show it's clickable when no image is present
+                            <div className="noAvatarPlaceholder">
+                                {uploading ? 'Uploading...' : 'Tap to Upload'} 
+                            </div>
+                        )}
+                        <input
+                            ref={fileInputRef} // 👈 ADDED: Attach the ref here
+                            style={{ visibility: 'hidden', position: 'absolute' }}
+                            type="file"
+                            id="single"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            disabled={uploading}
+                        />
+                    </div>
 
-                <div style={{ width: '100%', marginBottom: '20px', marginTop: '5%' }}>
-                    <input
-                        placeholder="Email"
-                        type="email"
-                        id="email"
-                        value={email}
-                        readOnly
-                        style={styles.input}
-                    />
-                </div>
-                
-                {/* New input field for name */}
-                <div style={{ width: '100%', marginBottom: '20px' }}>
-                    <input
-                        placeholder="Name"
-                        type="text"
-                        id="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        style={styles.input}
-                    />
-                </div>
+                    {/* Email Input (Read Only) */}
+                    <div style={{ width: '100%', marginBottom: '20px', marginTop: '5%' }}>
+                        <input
+                            placeholder="Email"
+                            type="email"
+                            id="email"
+                            value={email}
+                            readOnly
+                            className="input1"
+                        />
+                    </div>
+                    
+                    {/* Name Input */}
+                    <div style={{ width: '100%', marginBottom: '20px' }}>
+                        <input
+                            placeholder="Name"
+                            type="text"
+                            id="name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="input1"
+                        />
+                    </div>
 
-                <div style={{ width: '100%', marginBottom: '20px' }}>
-                    <input
-                        placeholder="Bio"
-                        type="text"
-                        id="bio"
-                        value={bio}
-                        onChange={(e) => setBio(e.target.value)}
-                        style={styles.input}
-                    />
-                </div>
-                 <div style={{ width: '100%', marginBottom: '20px' }}>
-                    <input
-                        placeholder="Age"
-                        type="number"
-                        id="age"
-                        value={age}
-                        onChange={(e) => setAge(e.target.value)}
-                        style={styles.input}
-                    />
-                </div>
-<div style={{ width: '100%', marginBottom: '25%' }}>
-                    <input
-                        placeholder="Location"
-                        type="text"
-                        id="location"
-                        value={userLocation}
-                        onChange={(e) => setUserLocation(e.target.value)}
-                        style={styles.input}
-                    />
-                </div>
-               
-                <Button4 text="Save" onClick={handleUpdateProfile} />
-            </form>
-        </div>
+                    {/* Bio Input */}
+                    <div style={{ width: '100%', marginBottom: '20px' }}>
+                        <input
+                            placeholder="Bio"
+                            type="text"
+                            id="bio"
+                            value={bio}
+                            onChange={(e) => setBio(e.target.value)}
+                            className="input1"
+                        />
+                    </div>
+                    
+                    {/* Age Input */}
+                    <div style={{ width: '100%', marginBottom: '20px' }}>
+                        <input
+                            placeholder="Age"
+                            type="number"
+                            id="age"
+                            value={age}
+                            onChange={(e) => setAge(e.target.value)}
+                            className="input1"
+                        />
+                    </div>
+
+                    {/* Location Input */}
+                    <div style={{ width: '100%', marginBottom: '25%' }}>
+                        <input
+                            placeholder="Location"
+                            type="text"
+                            id="location"
+                            value={userLocation}
+                            onChange={(e) => setUserLocation(e.target.value)}
+                            className="input1"
+                        />
+                    </div>
+                    
+                    <Button4 text={loading ? "Saving..." : "Save"} disabled={loading} onClick={handleUpdateProfile} />
+                </form>
+            </div>
         </div>
     );
-};
-
-const styles = {
-    parentContainer: {
-      display: "flex",
-      justifyContent: "center", /* This centers the child horizontally */
-    },
-    container: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'left',
-        minHeight: '100vh',
-        backgroundColor: '#fff',
-        boxSizing: 'border-box',
-        maxWidth: '360px',
-        marginRight:'35px',
-        marginLeft:'35px',
-        width:'100%',
-    },
-    input: {
-    width: '100%',
-    border: 'none',
-    borderBottom: '1px solid #ccc',
-    padding: '10px 0px',
-    background: 'transparent',
-    fontSize: '32px',
-    lineHeight: '1.2',
-    color: '#000000',
-    outline: 'none',
-    fontWeight: "normal",
-    fontFamily: "'Funnel Display', sans-serif",  // 👈 Added
-},
-    avatarContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        
-    },
-    avatarImage: {
-        width: '100px',
-        height: '100px',
-        borderRadius: '50%',
-        objectFit: 'cover',
-        marginBottom: '10px',
-    },
-    noAvatarPlaceholder: {
-        width: '100px',
-        height: '100px',
-        borderRadius: '50%',
-        backgroundColor: '#e0e0e0',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: '10px',
-        color: '#888',
-    },
-    avatarUploadLabel: {
-        backgroundColor: '#e94e9f',
-        color: 'white',
-        padding: '8px 16px',
-        borderRadius: '20px',
-        cursor: 'pointer',
-    },
 };
 
 export default UpdateProfile;

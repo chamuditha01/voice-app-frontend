@@ -10,6 +10,10 @@ const ButtonContainer = styled.div`
   max-width: 360px;
   box-sizing: border-box;
   z-index: 1000;
+
+   @media (min-width: 769px) {
+    bottom: 10px; /* New value for desktop */
+  }
 `;
 
 const StyledButton = styled.button`
@@ -22,7 +26,7 @@ const StyledButton = styled.button`
   border: none;
   border-radius: 50px;
   cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
   transition: background-color 0.2s ease-in-out;
   text-transform: capitalize;
   font-family: 'Funnel Display', sans-serif;

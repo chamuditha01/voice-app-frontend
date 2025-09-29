@@ -1,0 +1,114 @@
+/* HomeScreen.css */
+
+.parentContainer {
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #fff;
+    box-sizing: border-box;
+    max-width: 360px;
+    margin-left: 35px;
+    margin-right: 35px;
+    width: 100%;
+}
+
+.header {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 10px;
+    padding-top: 10px;
+    margin-bottom: 30px;
+}
+
+.menuIcon {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 24px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.menuLine {
+    width: 100%;
+    height: 3px;
+    background-color: #333;
+    border-radius: 2px;
+}
+
+.gridSection {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    flex-shrink: 1;
+    margin-bottom: 30px;
+}
+
+.gridContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    background-color: #f0f2f5;
+    border-radius: 30px;
+    padding: 15px;
+}
+
+.gridItem {
+    width: calc(25% - 6px);
+    aspect-ratio: 1 / 1;
+    background-color: #ffffff;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.profileImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.textContainer {
+    text-align: center;
+    margin: 10% auto;
+    max-width: 300px;
+    flex-shrink: 1;
+}
+
+.mainText1 {
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 1.2;
+        text-align: center;
+    color: #333;
+}
+
+.buttonContainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: auto;
+}
+
+.appleSignInButton {
+    background-color: #000000;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 15px 30px;
+    border-radius: 15px;
+    border: none;
+    cursor: pointer;
+    max-width: 350px;
+    transition: background-color 0.3s ease;
+}

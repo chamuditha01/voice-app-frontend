@@ -136,7 +136,7 @@ useEffect(() => {
             localAudioContextRef.current.close();
         }
     };
-}, [localStreamRef.current]); // Dependency on localStreamRef.current ensures it runs when the stream is acquired
+}, [endCall, myId]); // Dependency on localStreamRef.current ensures it runs when the stream is acquired
   
 
   useEffect(() => {
@@ -1037,7 +1037,7 @@ peerConnectionRef.current.ontrack = (event) => {
     setIsGrabbing(false);
   };
 
-  const canvasRef = useRef(null);
+
 
 
 

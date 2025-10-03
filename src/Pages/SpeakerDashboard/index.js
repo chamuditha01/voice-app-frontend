@@ -6,7 +6,7 @@ import CallComponent from '../Twillio/CallComponent'; // Assuming this is the co
 function SpeakerDashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isAvailable, setIsAvailable] = useState(false);
+  const [, setIsAvailable] = useState(false);
   const [reviews, ] = useState([]); // State to store reviews
   const [averageRating, ] = useState(0); // State for average rating
   const navigate = useNavigate();

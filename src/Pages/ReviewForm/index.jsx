@@ -30,7 +30,7 @@ const profiles = [
 ];
 
 const ReviewForm = () => {
-  const [currentProfileIndex, setCurrentProfileIndex] = useState(0);
+  const [currentProfileIndex, ] = useState(0);
   const navigate = useNavigate();
   const currentProfile = profiles[currentProfileIndex];
 

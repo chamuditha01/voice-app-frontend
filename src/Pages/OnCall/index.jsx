@@ -31,7 +31,7 @@ const profiles = [
 ];
 
 const CallScreen = () => {
-  const [currentProfileIndex, setCurrentProfileIndex] = useState(0);
+  const [currentProfileIndex, ] = useState(0);
   const navigate = useNavigate();
   const currentProfile = profiles[currentProfileIndex];
 

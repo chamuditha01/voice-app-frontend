@@ -1,6 +1,5 @@
 import  { useState, useEffect, useRef } from "react";
 import "./index.css";
-import { useSwipeable } from "react-swipeable";
 import Header from "../../Components/Header";
 import imgunmute from "./microphone.png";
 import imgmute from "./mute-button.png";
@@ -11,7 +10,7 @@ import { supabase } from "../../supabaseClient";
 
 const CallComponent = ({ email, role }) => {
   const [status, setStatus] = useState("Disconnected");
-  const [availableUsers, setAvailableUsers] = useState([]);
+  const [, setAvailableUsers] = useState([]);
   const [callRequest, setCallRequest] = useState(null);
   const localStreamRef = useRef(null);
   const peerConnectionRef = useRef(null);
@@ -36,7 +35,7 @@ const CallComponent = ({ email, role }) => {
     targetId: null,
     callId: null,
   });
-  const [currentUserIndex, setCurrentUserIndex] = useState(0);
+
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState("");
   const [name, setName] = useState(""); // Current user's name
@@ -142,7 +141,7 @@ const CallComponent = ({ email, role }) => {
               localAudioContextRef.current.close();
           }
       };
-  }, [localStreamRef.current]); // Dependency on localStreamRef.current ensures it runs when the stream is acquired
+  }, [endCall, myId]); // Dependency on localStreamRef.current ensures it runs when the stream is acquired
     
 
   useEffect(() => {

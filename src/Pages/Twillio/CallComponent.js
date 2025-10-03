@@ -50,109 +50,6 @@ const analyserRef = useRef(null);
 const animationFrameIdRef = useRef(null);
 const [isSpeaking, setIsSpeaking] = useState(false);
 
-
-
-  const endCall = (notifyServer = true, showForm = false) => {
-    console.log('Call cancelled')
-  // Check if the peer connection is still active and gracefully close it
-  if (
-    peerConnectionRef.current &&
-    peerConnectionRef.current.signalingState !== "closed"
-  ) {
-    peerConnectionRef.current.close();
-    peerConnectionRef.current = null;
-  }
-  // Stop the local media stream
-  if (localStreamRef.current) {
-    localStreamRef.current.getTracks().forEach((track) => track.stop());
-    localStreamRef.current = null;
-  }
-
-  
-  // This block runs only if the call was in progress and we need to notify the server
-  if (status === "In a call" && notifyServer) {
-    const endTime = new Date().toISOString();
-    const {
-      opponentEmail,
-      opponentName,
-      opponentAge,
-      opponentBio,
-      opponentImageUrl,
-      opponentLocation,
-    //  targetId, // Important to get the opponent's ID
-    } = callDetails;
-
-    
-
-    // New logic to update minutes_remaining in Supabase
-    if (role === "learner") {
-      const callDurationInMinutes = Math.floor(callTime / 60);
-
-      const updateMinutes = async () => {
-        // First, get the current minutes_remaining
-        const { data, error } = await supabase
-          .from("users")
-          .select("minutes_remaining")
-          .eq("email", email)
-          .single();
-
-        if (error) {
-          console.error("Error fetching minutes remaining:", error.message);
-          return;
-        }
-
-        if (data) {
-          const newMinutesRemaining = Math.max(
-            0,
-            data.minutes_remaining - callDurationInMinutes
-          );
-
-          // Then, update the minutes_remaining
-          const { error: updateError } = await supabase
-            .from("users")
-            .update({ minutes_remaining: newMinutesRemaining })
-            .eq("email", email);
-
-          if (updateError) {
-            console.error(
-              "Error updating minutes remaining:",
-              updateError.message
-            );
-          } else {
-            console.log(
-              `Minutes remaining updated to: ${newMinutesRemaining}`
-            );
-          }
-        }
-      };
-      updateMinutes();
-    }
-
-    // Prepare and send call data to the server
-    const callData = {
-      learner_email: role === "learner" ? email : opponentEmail,
-      speaker_email: role === "speaker" ? email : opponentEmail,
-      opponentName: opponentName,
-      opponentAge: opponentAge,
-      opponentBio: opponentBio,
-      opponentImageUrl: opponentImageUrl,
-      opponentLocation: opponentLocation,
-      duration: callTime,
-      startTime,
-      endTime,
-    };
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: "call_ended", ...callData }));
-    }
-  }
-
-  // Reset the local state
-  setStatus("Disconnected");
-  if (showForm) {
-    setShowRatingForm(true);
-  }
-};
-
 useEffect(() => {
     if (remoteStream) {
         audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -239,7 +136,7 @@ useEffect(() => {
             localAudioContextRef.current.close();
         }
     };
-}, [ endCall, myId]); // Dependency on localStreamRef.current ensures it runs when the stream is acquired
+}, []); // Dependency on localStreamRef.current ensures it runs when the stream is acquired
   
 
   useEffect(() => {
@@ -796,6 +693,106 @@ peerConnectionRef.current.ontrack = (event) => {
   }
 };
 
+  const endCall = (notifyServer = true, showForm = false) => {
+    console.log('Call cancelled')
+  // Check if the peer connection is still active and gracefully close it
+  if (
+    peerConnectionRef.current &&
+    peerConnectionRef.current.signalingState !== "closed"
+  ) {
+    peerConnectionRef.current.close();
+    peerConnectionRef.current = null;
+  }
+  // Stop the local media stream
+  if (localStreamRef.current) {
+    localStreamRef.current.getTracks().forEach((track) => track.stop());
+    localStreamRef.current = null;
+  }
+
+  
+  // This block runs only if the call was in progress and we need to notify the server
+  if (status === "In a call" && notifyServer) {
+    const endTime = new Date().toISOString();
+    const {
+      opponentEmail,
+      opponentName,
+      opponentAge,
+      opponentBio,
+      opponentImageUrl,
+      opponentLocation,
+    //  targetId, // Important to get the opponent's ID
+    } = callDetails;
+
+    
+
+    // New logic to update minutes_remaining in Supabase
+    if (role === "learner") {
+      const callDurationInMinutes = Math.floor(callTime / 60);
+
+      const updateMinutes = async () => {
+        // First, get the current minutes_remaining
+        const { data, error } = await supabase
+          .from("users")
+          .select("minutes_remaining")
+          .eq("email", email)
+          .single();
+
+        if (error) {
+          console.error("Error fetching minutes remaining:", error.message);
+          return;
+        }
+
+        if (data) {
+          const newMinutesRemaining = Math.max(
+            0,
+            data.minutes_remaining - callDurationInMinutes
+          );
+
+          // Then, update the minutes_remaining
+          const { error: updateError } = await supabase
+            .from("users")
+            .update({ minutes_remaining: newMinutesRemaining })
+            .eq("email", email);
+
+          if (updateError) {
+            console.error(
+              "Error updating minutes remaining:",
+              updateError.message
+            );
+          } else {
+            console.log(
+              `Minutes remaining updated to: ${newMinutesRemaining}`
+            );
+          }
+        }
+      };
+      updateMinutes();
+    }
+
+    // Prepare and send call data to the server
+    const callData = {
+      learner_email: role === "learner" ? email : opponentEmail,
+      speaker_email: role === "speaker" ? email : opponentEmail,
+      opponentName: opponentName,
+      opponentAge: opponentAge,
+      opponentBio: opponentBio,
+      opponentImageUrl: opponentImageUrl,
+      opponentLocation: opponentLocation,
+      duration: callTime,
+      startTime,
+      endTime,
+    };
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: "call_ended", ...callData }));
+    }
+  }
+
+  // Reset the local state
+  setStatus("Disconnected");
+  if (showForm) {
+    setShowRatingForm(true);
+  }
+};
 
 
   const handleRatingSubmit = (e) => {

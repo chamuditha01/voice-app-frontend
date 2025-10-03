@@ -141,7 +141,7 @@ const CallComponent = ({ email, role }) => {
               localAudioContextRef.current.close();
           }
       };
-  }, [ myId]); // Dependency on localStreamRef.current ensures it runs when the stream is acquired
+  }, []); // Dependency on localStreamRef.current ensures it runs when the stream is acquired
     
 
   useEffect(() => {

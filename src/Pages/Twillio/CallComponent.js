@@ -136,7 +136,7 @@ useEffect(() => {
             localAudioContextRef.current.close();
         }
     };
-}, [endCall, myId]); // Dependency on localStreamRef.current ensures it runs when the stream is acquired
+}, [ myId]); // Dependency on localStreamRef.current ensures it runs when the stream is acquired
   
 
   useEffect(() => {

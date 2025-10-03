@@ -153,7 +153,7 @@ const ReviewForm = () => {
         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
       </svg>
     </div>
-        <div style={{width:'80%', backgroundColor:'#facce4ff',height:'10px',margin:'0px auto',padding:'20px',borderRadius:'25px',height:'80px',marginTop:'20px'}}>
+        <div style={{width:'80%', backgroundColor:'#facce4ff',margin:'0px auto',padding:'20px',borderRadius:'25px',height:'80px',marginTop:'20px'}}>
            <textarea 
   placeholder="Submit a review..." 
   style={{

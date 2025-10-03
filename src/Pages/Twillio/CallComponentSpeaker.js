@@ -891,7 +891,7 @@ console.log("Going offline...");
                   alignItems: "left",
                   width: "100%",
                   maxWidth: "360px",
-                  width:'100%',
+                  
                   gap:'20px',
                 }}
               >

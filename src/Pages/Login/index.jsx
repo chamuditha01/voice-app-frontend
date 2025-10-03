@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import  { useState } from 'react';
+import {  useNavigate } from 'react-router-dom';
 import Header from '../../Components/Header';
-import Button2 from '../../Components/Button 2';
 import { supabase } from '../../supabaseClient';
 import Button4 from '../../Components/Button4';
 import showPasswordIcon from './show.png';

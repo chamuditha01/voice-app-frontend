@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import  { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../Components/Header';
-import Button2 from '../../Components/Button 2'; // Keeping Button2, though it's not used in the JSX
 import { supabase } from '../../supabaseClient';
 import Button4 from '../../Components/Button4';
 import './index.css';
@@ -9,7 +8,7 @@ import './index.css';
 const UpdateProfile = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const fileInputRef = useRef(null); // 👈 ADDED: Ref for the hidden file input
+    const fileInputRef = useRef(null);
 
     const [loading, setLoading] = useState(true);
     const [email, setEmail] = useState('');
@@ -18,7 +17,10 @@ const UpdateProfile = () => {
     const [age, setAge] = useState('');
     const [avatarUrl, setAvatarUrl] = useState(null);
     const [userLocation, setUserLocation] = useState('');
-    const [uploading, setUploading] = useState(false);
+    
+    // State to handle processing indicator
+    const [processingImage, setProcessingImage] = useState(false); 
+    const [uploading, setUploading] = useState(false); 
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -56,46 +58,59 @@ const UpdateProfile = () => {
         fetchUserData();
     }, [navigate, location.state]);
 
-    // 👈 ADDED: Function to programmatically click the hidden file input
     const handleAvatarClick = () => {
-        if (fileInputRef.current && !uploading) {
+        // Only allow click if not busy
+        if (fileInputRef.current && !uploading && !processingImage) {
             fileInputRef.current.click(); 
         }
     };
 
+    // --- UPDATED: handleImageUpload function for Cloudinary backend on PORT 3001 ---
     const handleImageUpload = async (event) => {
         try {
-            setUploading(true);
+            setUploading(true); // Start general uploading state
+            setProcessingImage(true); // Start specific processing state
 
             if (!event.target.files || event.target.files.length === 0) {
                 throw new Error('You must select an image to upload.');
             }
 
             const file = event.target.files[0];
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
-            const filePath = `${fileName}`;
+            
+            // 1. Prepare data for the backend
+            const formData = new FormData();
+            formData.append('profilePhoto', file); 
+            // Send the user's email/unique identifier to the backend
+            formData.append('userId', email); 
+            
+            // 2. Send image to your Node.js/Cloudinary backend endpoint
+            const backendUrl = 'http://localhost:3001/upload-profile-photo'; // 👈 Node.js/Cloudinary Endpoint
+            
+            const response = await fetch(backendUrl, {
+                method: 'POST',
+                body: formData,
+            });
 
-            const { error: uploadError } = await supabase.storage
-                .from('avatars')
-                .upload(filePath, file);
+            const data = await response.json();
 
-            if (uploadError) {
-                throw uploadError;
+            if (!response.ok) {
+                // Handle errors returned by the backend (details is from the Cloudinary server)
+                throw new Error(data.details || data.error || `Backend failed with status ${response.status}`);
             }
 
-            const { data: publicUrl } = supabase.storage
-                .from('avatars')
-                .getPublicUrl(filePath);
-
-            setAvatarUrl(publicUrl.publicUrl);
+            // 3. Update avatar URL with the processed image link from the backend
+            setAvatarUrl(data.imageUrl); 
+            alert("Profile image processed and updated!");
+            
         } catch (error) {
-            alert(error.message);
-            console.error('Error uploading image:', error);
+            alert(`Error updating image: ${error.message}`);
+            console.error('Error updating image:', error);
         } finally {
-            setUploading(false);
+            setUploading(false); // End general uploading state
+            setProcessingImage(false); // End specific processing state
         }
     };
+    // -----------------------------------------------------------
 
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
@@ -104,6 +119,7 @@ const UpdateProfile = () => {
         // Ensure age is stored as a number (Supabase may enforce types)
         const ageValue = age ? parseInt(age, 10) : null;
 
+        // Save the updated profile data, including the new avatarUrl
         const { error: profileError } = await supabase
             .from('users')
             .update({ name, bio, age: ageValue, imageUrl: avatarUrl, location: userLocation })
@@ -118,13 +134,16 @@ const UpdateProfile = () => {
         }
         setLoading(false);
     };
+    
+    // Use combined state for disabling buttons and showing indicators
+    const isBusy = loading || uploading || processingImage;
 
     if (loading) {
         return (
             <div className="parentContainer">
                 <div className="container">
                     <Header />
-                    <h1 style={{ margin: 'auto', textAlign: 'center', color: '#e94e9f' }}>...</h1>
+                    <h1 style={{ margin: 'auto', textAlign: 'center', color: '#e94e9f' }}>Loading...</h1>
                 </div>
             </div>
         );
@@ -154,28 +173,28 @@ const UpdateProfile = () => {
                         alignItems: 'center' 
                     }}
                 >
-                    {/* ADDED: onClick handler and pointer style */}
+                    
                     <div 
                         className="avatarContainer"
                         onClick={handleAvatarClick} 
-                        style={{ cursor: uploading ? 'default' : 'pointer' }}
+                        style={{ cursor: isBusy ? 'default' : 'pointer' }}
                     >
                         {avatarUrl ? (
                             <img src={avatarUrl} alt="Avatar" className="avatarImage" draggable="false"/>
                         ) : (
-                            // Using a button/label to show it's clickable when no image is present
                             <div className="noAvatarPlaceholder">
-                                {uploading ? 'Uploading...' : 'Tap to Upload'} 
+                                {/* Indicator shows if it's currently processing */}
+                                {processingImage ? 'Processing Image...' : (uploading ? 'Uploading...' : 'Tap to Upload')} 
                             </div>
                         )}
                         <input
-                            ref={fileInputRef} // 👈 ADDED: Attach the ref here
+                            ref={fileInputRef}
                             style={{ visibility: 'hidden', position: 'absolute' }}
                             type="file"
                             id="single"
                             accept="image/*"
                             onChange={handleImageUpload}
-                            disabled={uploading}
+                            disabled={isBusy}
                         />
                     </div>
 
@@ -188,6 +207,7 @@ const UpdateProfile = () => {
                             value={email}
                             readOnly
                             className="input1"
+                            disabled={isBusy}
                         />
                     </div>
                     
@@ -200,6 +220,7 @@ const UpdateProfile = () => {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             className="input1"
+                            disabled={isBusy}
                         />
                     </div>
 
@@ -212,6 +233,7 @@ const UpdateProfile = () => {
                             value={bio}
                             onChange={(e) => setBio(e.target.value)}
                             className="input1"
+                            disabled={isBusy}
                         />
                     </div>
                     
@@ -224,6 +246,7 @@ const UpdateProfile = () => {
                             value={age}
                             onChange={(e) => setAge(e.target.value)}
                             className="input1"
+                            disabled={isBusy}
                         />
                     </div>
 
@@ -236,10 +259,11 @@ const UpdateProfile = () => {
                             value={userLocation}
                             onChange={(e) => setUserLocation(e.target.value)}
                             className="input1"
+                            disabled={isBusy}
                         />
                     </div>
                     
-                    <Button4 text={loading ? "Saving..." : "Save"} disabled={loading} onClick={handleUpdateProfile} />
+                    <Button4 text={isBusy ? "Processing..." : "Save"} disabled={isBusy} onClick={handleUpdateProfile} />
                 </form>
             </div>
         </div>

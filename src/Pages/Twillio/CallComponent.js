@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import  { useState, useEffect, useRef } from "react";
 import "./index.css";
 import { useSwipeable } from "react-swipeable";
 import Header from "../../Components/Header";
@@ -213,14 +213,29 @@ useEffect(() => {
         peerConnectionRef.current.addTrack(track, stream);
       });
 
-      peerConnectionRef.current.ontrack = (event) => {
+      // In startCall:
+
+      
+peerConnectionRef.current.ontrack = (event) => {
     const [remoteStream] = event.streams;
+    
     const remoteAudio = new Audio();
-    remoteAudio.srcObject = remoteStream;
-    remoteAudio.play();
-    setRemoteStream(remoteStream); // <-- Store the stream here
+    remoteAudio.autoplay = true; // Use autoplay attribute
+    remoteAudio.playsInline = true; // Essential for iOS
+    
+    // Must be done immediately after creation
+    remoteAudio.srcObject = remoteStream; 
+    
+    // Attempt play, but include error handling for the promise
+    remoteAudio.play().catch(e => {
+        // This catch block handles the common iOS/Safari Autoplay failure.
+        console.warn("Autoplay failed. The user needs to manually interact.", e);
+    });
+
+    setRemoteStream(remoteStream);
     setStatus("In a call");
 };
+
 
 
       peerConnectionRef.current.onicecandidate = (event) => {

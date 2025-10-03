@@ -1,11 +1,8 @@
-import logo from './logo.svg';
+z
 import './App.css';
 import { Route,Routes,BrowserRouter } from 'react-router-dom';
 import Signup from './Pages/Signup';
-import Login from './Pages/Login/Login';
-import Dashboard from './Pages/Dashboard';
 import PrivateRoute from './Components/PrivateRoute';
-
 import SpeakerDashboard from './Pages/SpeakerDashboard';
 import { useEffect,useState } from 'react';
 import TalktuLandingPage from './Pages/Lading Page';

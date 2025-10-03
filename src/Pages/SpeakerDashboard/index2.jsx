@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import Header from '../../Components/Header';
-import { supabase } from '../../supabaseClient';
+import  { useState, useEffect } from 'react';
+
 import CallComponent from '../Twillio/CallComponentSpeaker';
 import { useNavigate } from 'react-router-dom';
 

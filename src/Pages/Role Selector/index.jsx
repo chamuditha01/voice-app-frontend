@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+
+import {  useNavigate } from 'react-router-dom';
 import Header from '../../Components/Header';
-import Button from '../../Components/Button 1';
+
 import Button2 from '../../Components/Button 2';
 
 const RoleSelector = () => {

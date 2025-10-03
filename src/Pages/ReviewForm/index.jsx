@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../Components/Header';
 import Button2 from '../../Components/Button 2';
-import { Call } from '@twilio/voice-sdk';
 import Button3 from '../../Components/Button 3';
 
 // Placeholder data for profiles

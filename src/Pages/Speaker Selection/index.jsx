@@ -1,8 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import  { useState, useEffect, } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../../Components/Header';
-import Button2 from '../../Components/Button 2';
-import { supabase } from '../../supabaseClient';
 import CallComponent from '../Twillio/CallComponent';
 
 const ProfileScreen = () => {

@@ -32,7 +32,7 @@ const CallComponent = ({ email, role }) => {
     targetId: null,
     callId: null,
   });
-  const [currentUserIndex, setCurrentUserIndex] = useState(0);
+  const [currentUserIndex, ] = useState(0);
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState("");
   const [name, setName] = useState(""); // Current user's name
@@ -40,7 +40,6 @@ const CallComponent = ({ email, role }) => {
   const [bio, setBio] = useState(""); // Current user's bio
   const [location, setLocation] = useState(""); // Current user's location
   const [imageUrl, setImageUrl] = useState(""); // Current user's imageUrl
-  const [myimgUrl, setmyImgUrl] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
   const [isMySpeaking, setIsMySpeaking] = useState(false); 
 

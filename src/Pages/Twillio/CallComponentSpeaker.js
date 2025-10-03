@@ -45,8 +45,8 @@ const CallComponent = ({ email, role }) => {
   const [imageUrl, setImageUrl] = useState(""); // Current user's imageUrl
   const [location, setLocation] = useState(""); // Current user's location
   const [myimgUrl, setmyImgUrl] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [, setLoading] = useState(false);
+  const [, setError] = useState(null);
   const [canceledMessage, setCanceledMessage] = useState(null);
     const [remoteStream, setRemoteStream] = useState(null);
     const [isMySpeaking, setIsMySpeaking] = useState(false); 

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import CallComponent from '../Twillio/CallComponent';
 
 const ProfileScreen = () => {
-    const navigate = useNavigate();
+   
     const [email, setEmail] = useState(null);
     const [role, setRole] = useState(null);
     

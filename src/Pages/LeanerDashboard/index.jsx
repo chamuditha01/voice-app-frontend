@@ -12,7 +12,7 @@ const LearnerDashUpdate = () => { // Removed userEmail from props
     const [minutesRemaining, setMinutesRemaining] = useState(0);
     const [averageScore, setAverageScore] = useState('N/A');
     const [imgUrl, setImgUrl] = useState(null);
-    const [error, setError] = useState(null);
+    const [, setError] = useState(null);
 
      useEffect(() => {
         const fetchProfileData = async () => {

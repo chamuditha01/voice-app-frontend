@@ -8,8 +8,7 @@ import './index.css';
 const MenuPage = () => {
     const navigate = useNavigate();
 
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+
     const [role, setRole] = useState(''); // Default role is 'learner'
 
     useEffect(() => {

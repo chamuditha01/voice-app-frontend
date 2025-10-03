@@ -7,9 +7,8 @@ function SpeakerDashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAvailable, setIsAvailable] = useState(false);
-  const [callStatus, setCallStatus] = useState('idle');
-  const [reviews, setReviews] = useState([]); // State to store reviews
-  const [averageRating, setAverageRating] = useState(0); // State for average rating
+  const [reviews, ] = useState([]); // State to store reviews
+  const [averageRating, ] = useState(0); // State for average rating
   const navigate = useNavigate();
 
   useEffect(() => {

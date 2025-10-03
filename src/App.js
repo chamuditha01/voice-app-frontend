@@ -1,4 +1,4 @@
-z
+
 import './App.css';
 import { Route,Routes,BrowserRouter } from 'react-router-dom';
 import Signup from './Pages/Signup';
@@ -37,18 +37,7 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  const styles = {
-  // Main container for the entire screen
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100vh', 
-    backgroundColor: '#f0f2f5',
-    overflow: 'hidden', // Prevents vertical scrolling
-  },
-  // Other styles for content sections
-  // ...
-};
+ 
 
   return (
     <div >

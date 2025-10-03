@@ -26,19 +26,7 @@ function SpeakerDashboard() {
           setUser(user);
           setIsAvailable(userData.is_available);
 
-          // Fetch reviews and calculate average rating
-          {/*const { data: reviewsData, error: reviewsError } = await supabase
-            .from('reviews')
-            .select('*')
-            .eq('reviewed_email', user.email);
-
-          if (reviewsError) throw reviewsError;
-          setReviews(reviewsData);
-
-          if (reviewsData.length > 0) {
-            const totalRating = reviewsData.reduce((sum, review) => sum + review.rating, 0);
-            setAverageRating((totalRating / reviewsData.length).toFixed(1));
-          }*/}
+          
         } else {
           navigate('/');
         }
@@ -52,23 +40,7 @@ function SpeakerDashboard() {
     fetchUserAndReviews();
   }, [navigate]);
 
-  const toggleAvailability = async () => {
-    if (!user) return;
-    const newAvailability = !isAvailable;
-    try {
-      const { error } = await supabase
-        .from('users')
-        .update({ is_available: newAvailability })
-        .eq('id', user.id);
-
-      if (error) throw error;
-      setIsAvailable(newAvailability);
-      console.log(`Speaker availability updated to ${newAvailability}`);
-    } catch (error) {
-      console.error('Failed to update availability:', error.message);
-      alert('Failed to update availability.');
-    }
-  };
+  
 
   if (loading) {
     return <div>Loading user data...</div>;

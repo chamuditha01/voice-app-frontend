@@ -475,23 +475,6 @@ useEffect(() => {
     return `${formattedMinutes}:${formattedSeconds}`;
   };
 
-  const handleCallSpecificUser = (targetId, opponentEmail, opponentName, opponentAge, opponentBio, opponentImageUrl, opponentLocation) => {
-    if (wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(
-        JSON.stringify({
-          type: "call_request",
-          targetId: targetId,
-          opponentEmail: opponentEmail,
-          opponentName: opponentName,
-          opponentAge: opponentAge,
-          opponentBio: opponentBio,
-          opponentImageUrl: opponentImageUrl,
-            opponentLocation: opponentLocation,
-        })
-      );
-      setStatus("Requesting Call...");
-    }
-  };
 
   const handleAcceptCall = async () => {
     if (wsRef.current.readyState === WebSocket.OPEN) {
@@ -771,19 +754,8 @@ useEffect(() => {
 
  
   // Swipe handlers
-  const handlers = useSwipeable({
-    onSwipedLeft: () => {
-      if (availableUsers.length > 0) {
-        setCurrentUserIndex((prevIndex) =>
-          prevIndex === availableUsers.length - 1 ? 0 : prevIndex + 1
-        );
-      }
-    },
-    preventDefaultTouchmoveEvent: true,
-    trackMouse: true, // Allows swipe with mouse for testing
-  });
 
-  const currentUser = availableUsers[currentUserIndex];
+
 
   const [isMuted, setIsMuted] = useState(false);
 

@@ -1,86 +1,9 @@
 import  { useState, useEffect } from 'react';
 
 import CallComponent from '../Twillio/CallComponentSpeaker';
-import { useNavigate } from 'react-router-dom';
-
-const styles = {
-    container: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        minHeight: '100vh',
-        backgroundColor: '#f0f2f5',
-        boxSizing: 'border-box',
-        maxWidth: '360px',
-        margin: '0 auto',
-        padding: '20px',
-    },
-    section: {
-        width: '100%',
-        backgroundColor: '#fff',
-        borderRadius: '10px',
-        padding: '20px',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
-        marginBottom: '20px',
-    },
-    heading: {
-        fontSize: '24px',
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: '10px',
-    },
-    dataPoint: {
-        fontSize: '18px',
-        color: '#666',
-        marginBottom: '8px',
-    },
-    dataValue: {
-        fontWeight: 'bold',
-        color: '#e14e97',
-    },
-    divider: {
-        borderBottom: '1px solid #eee',
-        margin: '15px 0',
-    },
-    callRequestContainer: {
-        backgroundColor: '#fff',
-        borderRadius: '10px',
-        padding: '20px',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        width: '100%',
-        textAlign: 'center',
-        marginTop: '20px',
-    },
-    callRequestText: {
-        fontSize: '20px',
-        fontWeight: 'bold',
-        color: '#e14e97',
-        marginBottom: '15px',
-    },
-    callButtons: {
-        display: 'flex',
-        justifyContent: 'space-around',
-    },
-    acceptButton: {
-        backgroundColor: '#28a745',
-        color: 'white',
-        padding: '10px 20px',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-    },
-    rejectButton: {
-        backgroundColor: '#dc3545',
-        color: 'white',
-        padding: '10px 20px',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-    },
-};
 
 const SpeakerDashboard2 = () => {
-     const navigate = useNavigate();
+ 
     const [email, setEmail] = useState(null);
     const [role, setRole] = useState(null);
     

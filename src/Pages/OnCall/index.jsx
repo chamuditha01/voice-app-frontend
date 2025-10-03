@@ -36,12 +36,7 @@ const CallScreen = () => {
   const currentProfile = profiles[currentProfileIndex];
 
   // This function would be triggered by a swipe gesture
-  const handleSwipeLeft = () => {
-    // In a real app, this would be attached to a library's swipe event handler
-    setCurrentProfileIndex((prevIndex) => 
-      (prevIndex + 1) % profiles.length // Loop back to the first profile
-    );
-  };
+
   
   // This function is for navigating to the 'talk' page when the button is clicked
   const handleTalkClick = () => {

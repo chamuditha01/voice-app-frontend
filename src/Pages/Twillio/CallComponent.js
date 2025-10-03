@@ -619,7 +619,7 @@ peerConnectionRef.current.ontrack = (event) => {
       opponentBio,
       opponentImageUrl,
       opponentLocation,
-      targetId, // Important to get the opponent's ID
+     // targetId, // Important to get the opponent's ID
     } = callDetails;
 
     
@@ -720,7 +720,7 @@ peerConnectionRef.current.ontrack = (event) => {
       opponentBio,
       opponentImageUrl,
       opponentLocation,
-      targetId, // Important to get the opponent's ID
+    //  targetId, // Important to get the opponent's ID
     } = callDetails;
 
     
@@ -1039,46 +1039,7 @@ peerConnectionRef.current.ontrack = (event) => {
 
   const canvasRef = useRef(null);
 
-  const drawFrequencyMap = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
 
-    const canvasCtx = canvas.getContext("2d");
-    const analyser = analyserRef.current;
-    if (!analyser) return;
-
-    analyser.fftSize = 256;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    const draw = () => {
-      animationFrameIdRef.current = requestAnimationFrame(draw);
-
-      analyser.getByteFrequencyData(dataArray);
-
-      canvasCtx.fillStyle = "transparent";
-      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const barWidth = (canvas.width / bufferLength) * 2.5;
-      let barHeight;
-      let x = 0;
-
-      for (let i = 0; i < bufferLength; i++) {
-        barHeight = dataArray[i];
-
-        canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 100)`;
-        canvasCtx.fillRect(
-          x,
-          canvas.height - barHeight / 2,
-          barWidth,
-          barHeight / 2
-        );
-
-        x += barWidth + 1;
-      }
-    };
-    draw();
-  };
 
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedusershow, setSelectedUserShow] = useState(false);
